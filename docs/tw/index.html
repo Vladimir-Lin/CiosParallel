@@ -1,0 +1,384 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>「國家」資訊支援子系統</title>
+  </head>
+  <body>
+    <div align="center">
+      <h1>「國家」資訊支援子系統</h1>
+    </div>
+    <hr width="100%" size="2">
+    <h2> 簡介</h2>
+    國際標準化組織的ISO 3166-1國際標準是ISO 3166的第一部分，有ISO標準國家代碼。1974年首次出版。ISO
+    3166-1旨在為國家、屬地、具特殊科學價值地點建立國際認可的代碼。代碼分為3種，即二位字母代碼（alpha-2）、三位字母代碼（alpha-
+    3）、數字代碼（numeric）。其中，二位字母代碼適用於通常情況，三位字母代碼更接近國家名稱，而數字代碼則適用於非拉丁字母環境中。 <br>
+    <br>
+    ISO 3166-2則包含約3700個國家及行政地區。<br>
+    <br>
+    ISO 3166-3是ISO 3166國際標準的第三部份，定義從自1974年ISO
+    3166-1標準發布後被刪除的代碼。該標準於1998年首次出版。<br>
+    <br>
+    <hr width="100%" size="2">
+    <h2>「國家」資料庫表格</h2>
+    <br>
+    <table width="100%" cellspacing="2" cellpadding="2" border="1">
+      <tbody>
+        <tr>
+          <td valign="top" align="center">欄位<br>
+          </td>
+          <td valign="top" align="center">資料型態<br>
+          </td>
+          <td valign="top" align="center">數值範圍<br>
+          </td>
+          <td valign="top" align="center">涵義</td>
+        </tr>
+        <tr>
+          <td valign="top">id<br>
+          </td>
+          <td valign="top">integer<br>
+          </td>
+          <td valign="top">&gt;0<br>
+          </td>
+          <td valign="top">資料庫位序編號<br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">uuid<br>
+          </td>
+          <td valign="top">bigint<br>
+          </td>
+          <td valign="top">&gt;0<br>
+          </td>
+          <td valign="top"><a href="#SUID">國家SUID編號</a></td>
+        </tr>
+        <tr>
+          <td valign="top">type<br>
+          </td>
+          <td valign="top">integer<br>
+          </td>
+          <td valign="top">0-9<br>
+          </td>
+          <td valign="top"><a href="#NationTypes">國家地區類型</a><br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">used<br>
+          </td>
+          <td valign="top">integer<br>
+          </td>
+          <td valign="top">0-3<br>
+          </td>
+          <td valign="top"><a href="#Activations">該編號是否啟用</a><br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">code<br>
+          </td>
+          <td valign="top">integer<br>
+          </td>
+          <td valign="top">0-999<br>
+          </td>
+          <td valign="top">ISO 3166-1數字代碼</td>
+        </tr>
+        <tr>
+          <td valign="top">two<br>
+          </td>
+          <td valign="top">tinyblob<br>
+          </td>
+          <td valign="top">AA-ZZ<br>
+          </td>
+          <td valign="top"><a href="#Two">ISO 3166-1雙碼</a></td>
+        </tr>
+        <tr>
+          <td valign="top">three<br>
+          </td>
+          <td valign="top">tinyblob<br>
+          </td>
+          <td valign="top">AAA-ZZZ<br>
+          </td>
+          <td valign="top">ISO 3166-1三碼</td>
+        </tr>
+        <tr>
+          <td valign="top">four<br>
+          </td>
+          <td valign="top">tinyblob</td>
+          <td valign="top">AAAA-ZZZZ</td>
+          <td valign="top">ISO 3166-3四碼</td>
+        </tr>
+        <tr>
+          <td valign="top">name<br>
+          </td>
+          <td valign="top">blob<br>
+          </td>
+          <td valign="top"><br>
+          </td>
+          <td valign="top">ISO 3166-1英文名稱<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <br>
+    <hr width="100%" size="2">
+    <h2>支援程式</h2>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <hr width="100%" size="2">
+    <h2>數據檔案</h2>
+    <br>
+    <ol>
+      <li><a href="Lists.txt">簡單列表</a></li>
+      <li><a href="ISO-3166-1.txt">表格列表</a></li>
+      <li><a href="countries.sql">資料庫表格</a></li>
+    </ol>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <hr width="100%" size="2">
+    <h2><a name="NationTypes"></a>國家地區類型</h2>
+    <br>
+    <table width="100%" cellspacing="2" cellpadding="2" border="1">
+      <tbody>
+        <tr>
+          <td width="5%" valign="top" align="center"><b><font
+                color="#3333ff">數值<br>
+              </font></b> </td>
+          <td width="5%" valign="top" align="center"><font
+              color="#3333ff"><b>英文</b></font><b><br>
+            </b></td>
+          <td width="20%" valign="top" align="center"><b><font
+                color="#3333ff">作用<br>
+              </font></b> </td>
+          <td valign="top" align="center"><b><font color="#3333ff">說明<br>
+              </font></b> </td>
+        </tr>
+        <tr>
+          <td valign="top" align="center">0<br>
+          </td>
+          <td valign="top">Any<br>
+          </td>
+          <td valign="top">沒有指定國家或地區</td>
+          <td valign="top"><br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top" align="center">1<br>
+          </td>
+          <td valign="top">Country<br>
+          </td>
+          <td valign="top">國家<br>
+          </td>
+          <td valign="top"><br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top" align="center">2<br>
+          </td>
+          <td valign="top">Region<br>
+          </td>
+          <td valign="top">地區<br>
+          </td>
+          <td valign="top"><br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top" align="center">3<br>
+          </td>
+          <td valign="top">Dispute<br>
+          </td>
+          <td valign="top">爭議區域<br>
+          </td>
+          <td valign="top"><br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top" align="center">4<br>
+          </td>
+          <td valign="top">Spiritual<br>
+          </td>
+          <td valign="top">無實體國家<br>
+          </td>
+          <td valign="top"><br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top" align="center">5<br>
+          </td>
+          <td valign="top">Expired<br>
+          </td>
+          <td valign="top">過期國家</td>
+          <td valign="top"><br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top" align="center">6<br>
+          </td>
+          <td valign="top">Historical<br>
+          </td>
+          <td valign="top">歷史國家</td>
+          <td valign="top">已經消滅的國家</td>
+        </tr>
+        <tr>
+          <td valign="top" align="center">7<br>
+          </td>
+          <td valign="top">Fiction<br>
+          </td>
+          <td valign="top">小說國家 </td>
+          <td valign="top"><br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top" align="center">8<br>
+          </td>
+          <td valign="top">Virtual<br>
+          </td>
+          <td valign="top">虛構抽象國家</td>
+          <td valign="top"><br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top" align="center">9<br>
+          </td>
+          <td valign="top">Others<br>
+          </td>
+          <td valign="top">其他種類國家地區</td>
+          <td valign="top"><br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <hr width="100%" size="2">
+    <h2><a name="Activations"></a>國家啟用狀態</h2>
+    <br>
+    <table width="100%" cellspacing="2" cellpadding="2" border="1">
+      <tbody>
+        <tr>
+          <td width="5%" valign="top" align="center"><b><font
+                color="#3333ff">數值<br>
+              </font></b></td>
+          <td width="5%" valign="top" align="center"><b><font
+                color="#3333ff">英文</font></b></td>
+          <td width="20%" valign="top" align="center"><b><font
+                color="#3333ff">作用<br>
+              </font></b></td>
+          <td valign="top" align="center"><b><font color="#3333ff">說明<br>
+              </font></b></td>
+        </tr>
+        <tr>
+          <td valign="top" align="center">0<br>
+          </td>
+          <td valign="top">Unused<br>
+          </td>
+          <td valign="top">沒有使用<br>
+          </td>
+          <td valign="top">該編號已經沒有使用。</td>
+        </tr>
+        <tr>
+          <td valign="top" align="center">1<br>
+          </td>
+          <td valign="top">Using<br>
+          </td>
+          <td valign="top">使用中<br>
+          </td>
+          <td valign="top">該編號已經使用中。</td>
+        </tr>
+        <tr>
+          <td valign="top" align="center">2<br>
+          </td>
+          <td valign="top">Editing<br>
+          </td>
+          <td valign="top">編撰中<br>
+          </td>
+          <td valign="top">該編號已經占用，但是目前編撰中。</td>
+        </tr>
+        <tr>
+          <td valign="top" align="center">3<br>
+          </td>
+          <td valign="top">Suspension<br>
+          </td>
+          <td valign="top">暫停使用<br>
+          </td>
+          <td valign="top">該編號已經占用，但是目前暫停使用。 </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <hr width="100%" size="2">
+    <h2><a name="Two"></a>二位字母代碼</h2>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <hr width="100%" size="2">
+    <h2><a name="SUID"></a>國家SUID編號</h2>
+    國家SUID編號是一個64位元的統一數值碼，目前佔用的範圍為從7400000000000000001到
+    7400000000000005000，共計5000個號碼，7400000000000005001到
+    7400000000001000000目前則被保留。<br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <hr width="100%" size="2"><br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <hr width="100%" size="2"><br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <hr width="100%" size="2">最後更新日期：2019/02/12 18:30<br>
+  </body>
+</html>

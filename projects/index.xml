@@ -1,0 +1,10 @@
+<Project>
+ <Name>
+   <Locality Value="1001" Prefer="0">ISO 3166 Supports</Locality>
+   <Locality Value="1002" Prefer="0">國家</Locality>
+ </Name>
+ <Schedule>
+ </Schedule>
+ <Log>
+ </Log>
+</Project>

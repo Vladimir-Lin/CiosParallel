@@ -1,0 +1,18 @@
+name=libstardate
+libdir=$${LIBPATH}
+includedir=$${INCLUDEPATH}
+lib=${name}.lib
+file=${libdir}/${lib}
+
+Name: libstardate
+Version: 0.0.1
+Description: Stellar Time Supports for CIOS
+URL: https://github.com/Vladimir-Lin/CiosTime
+Libs: -L${libdir} -l${name}
+Cflags: -I${includedir}
+
+compiler=@CMAKE_CXX_COMPILER_ID@
+type=@CMAKE_BUILD_TYPE@
+arch=@TARGET_ARCH@
+shared=@BUILD_SHARED_LIBS@
+timestamp=@COMPILE_DATETIME@
