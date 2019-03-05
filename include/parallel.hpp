@@ -27,6 +27,7 @@
 #include <time.h>
 
 #include "UUIDs.hpp"
+#include "stardate.hpp"
 
 #if !defined(PARALLEL_NAMESPACE)
 #define PARALLEL_NAMESPACE CIOS
@@ -45,15 +46,48 @@ namespace PARALLEL_NAMESPACE {
 
 #pragma pack(pop)
 
+class LIBPARALLEL_EXPORT Locker
+{
+  public:
+
+    enum Types         {
+      Default    = 0   ,
+      Normal     = 1   ,
+      ErrorCheck = 2   ,
+      Recursive  = 3 } ;
+
+    explicit  Locker  (void) ;
+    virtual ~ Locker  (void) ;
+
+    int       type    (void) const ;
+    void      setType (Types MT) ;
+
+    int       lock    (void) ;
+    int       unlock  (void) ;
+    int       locked  (void) ;
+    int       tryLock (void) ;
+
+  protected:
+
+    void * PrivatePacket ;
+
+    void      release (void) ;
+
+  private:
+
+} ;
+
 class LIBPARALLEL_EXPORT ThreadData : public Destroyer
 {
   public:
 
-    explicit     ThreadData (void) ;
-    virtual     ~ThreadData (void) ;
+    explicit       ThreadData (void) ;
+    virtual       ~ThreadData (void) ;
 
-    virtual bool Recycling  (void) ;
-    virtual bool Destructor (void) ;
+    virtual bool   Recycling  (void) ;
+    virtual bool   Destructor (void) ;
+
+    virtual void * Register   (void * package) ;
 
   protected:
 

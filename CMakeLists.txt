@@ -45,12 +45,13 @@ endif(MSVC)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(UUIDS REQUIRED UUIDs)
+pkg_check_modules(STARDATE REQUIRED libstardate)
 
 include_directories(include)
 include_directories (${UUIDS_INCLUDE_DIRS})
+include_directories (${STARDATE_INCLUDE_DIRS})
 link_directories(${UUIDS_LIBRARY_DIRS})
-
-message("${UUIDS_LIBRARY_DIRS}")
+link_directories(${STARDATE_LIBRARY_DIRS})
 
 # Header
 set(HEADERS include/parallel.hpp)
@@ -58,6 +59,7 @@ set(HEADERS include/parallel.hpp)
 # Source codes
 set(CORES
   src/parallel.cpp
+  src/Windows/Locker.cpp
   src/Windows/ThreadData.cpp
   src/Windows/Thread.cpp)
 

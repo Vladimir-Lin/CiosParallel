@@ -15,6 +15,7 @@ INCLUDEPATH  = $$SRCROOT/include
 HEADERS     += $$SRCROOT/include/parallel.hpp
 
 SOURCES     += $$SRCPATH/parallel.cpp
+SOURCES     += $$SRCPATH/Windows/Locker.cpp
 SOURCES     += $$SRCPATH/Windows/ThreadData.cpp
 SOURCES     += $$SRCPATH/Windows/Thread.cpp
 
