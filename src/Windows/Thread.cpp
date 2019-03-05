@@ -31,6 +31,11 @@ bool Thread::Destructor(void)
   return true ;
 }
 
+void * Thread::Register(void *)
+{
+  return nullptr ;
+}
+
 #ifndef DONT_USE_NAMESPACE
 }
 #endif

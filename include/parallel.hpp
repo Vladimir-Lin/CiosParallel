@@ -46,6 +46,7 @@ namespace PARALLEL_NAMESPACE {
 
 #pragma pack(pop)
 
+// A light version of Mutex
 class LIBPARALLEL_EXPORT Locker
 {
   public:
@@ -56,24 +57,43 @@ class LIBPARALLEL_EXPORT Locker
       ErrorCheck = 2   ,
       Recursive  = 3 } ;
 
-    explicit  Locker  (void) ;
-    virtual ~ Locker  (void) ;
+    explicit Locker  (void) ;
+    virtual ~Locker  (void) ;
 
-    int       type    (void) const ;
-    void      setType (Types MT) ;
+    int      type    (void) const ;
+    void     setType (Types MT) ;
 
-    int       lock    (void) ;
-    int       unlock  (void) ;
-    int       locked  (void) ;
-    int       tryLock (void) ;
+    int      lock    (void) ;
+    int      unlock  (void) ;
+    int      locked  (void) ;
+    int      trylock (void) ;
 
   protected:
 
     void * PrivatePacket ;
 
-    void      release (void) ;
+    void     release (void) ;
 
   private:
+
+} ;
+
+class LIBPARALLEL_EXPORT Latcher
+{
+  public:
+
+    explicit Latcher (Locker * locker) ;
+    virtual ~Latcher (void) ;
+
+    Locker * mutex   (void) const ;
+    void     relock  (void) ;
+    void     unlock  (void) ;
+
+  protected:
+
+  private:
+
+    Locker * lock ;
 
 } ;
 
@@ -99,12 +119,13 @@ class LIBPARALLEL_EXPORT Thread : public Destroyer
 {
   public:
 
-    explicit     Thread     (void) ;
-    virtual     ~Thread     (void) ;
+    explicit       Thread     (void) ;
+    virtual       ~Thread     (void) ;
 
-    virtual bool Recycling  (void) ;
-    virtual bool Destructor (void) ;
+    virtual bool   Recycling  (void) ;
+    virtual bool   Destructor (void) ;
 
+    virtual void * Register   (void * package) ;
 
   protected:
 

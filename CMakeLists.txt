@@ -60,6 +60,7 @@ set(HEADERS include/parallel.hpp)
 set(CORES
   src/parallel.cpp
   src/Windows/Locker.cpp
+  src/Windows/Latcher.cpp
   src/Windows/ThreadData.cpp
   src/Windows/Thread.cpp)
 

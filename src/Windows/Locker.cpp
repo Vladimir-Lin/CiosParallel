@@ -71,8 +71,8 @@ void Locker::setType(Types MT)
 int Locker::lock(void)
 {
   LockerStructure * ls = (LockerStructure *) this -> PrivatePacket ;
-  if ( nullptr == ls ) return                                      ;
-  if ( ls -> locked ) return 0                                     ;
+  if ( nullptr == ls ) return 0                                    ;
+  if ( ls -> locked  ) return 0                                    ;
   ls -> locked = true                                              ;
   ::EnterCriticalSection ( & ( ls -> mutex ) )                     ;
   return 1                                                         ;
@@ -81,7 +81,7 @@ int Locker::lock(void)
 int Locker::unlock(void)
 {
   LockerStructure * ls = (LockerStructure *) this -> PrivatePacket ;
-  if ( nullptr == ls ) return                                      ;
+  if ( nullptr == ls  ) return 0                                   ;
   if ( ! ls -> locked ) return 0                                   ;
   ::LeaveCriticalSection ( & ( ls -> mutex ) )                     ;
   ls -> locked = false                                             ;
@@ -91,15 +91,15 @@ int Locker::unlock(void)
 int Locker::locked(void)
 {
   LockerStructure * ls = (LockerStructure *) this -> PrivatePacket ;
-  if ( nullptr == ls ) return                                      ;
+  if ( nullptr == ls ) return 0                                    ;
   return ( ( ls -> locked ) ? 1 : 0 )                              ;
 }
 
 int Locker::trylock(void)
 {
   LockerStructure * ls = (LockerStructure *) this -> PrivatePacket ;
-  if ( nullptr == ls ) return                                      ;
-  if ( ls -> locked ) return 0                                     ;
+  if ( nullptr == ls ) return 0                                    ;
+  if ( ls -> locked  ) return 0                                    ;
   return this -> lock ( )                                          ;
 }
 
