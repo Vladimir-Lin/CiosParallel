@@ -13,12 +13,14 @@ SRCPATH      = $$SRCROOT/src
 INCLUDEPATH  = $$SRCROOT/include
 
 HEADERS     += $$SRCROOT/include/parallel.hpp
+HEADERS     += $$SRCPATH/Windows/PrivateParallel.hpp
 
 SOURCES     += $$SRCPATH/parallel.cpp
 SOURCES     += $$SRCPATH/Windows/Locker.cpp
 SOURCES     += $$SRCPATH/Windows/Latcher.cpp
 SOURCES     += $$SRCPATH/Windows/ThreadData.cpp
 SOURCES     += $$SRCPATH/Windows/Thread.cpp
+SOURCES     += $$SRCPATH/Windows/PrivateParallel.cpp
 
 OTHER_FILES += $$SRCROOT/CMakeLists.txt
 OTHER_FILES += $$SRCROOT/CiosParallel.bat

@@ -34,6 +34,7 @@ Latcher::~Latcher(void)
   if ( nullptr != this -> lock ) {
     this -> lock -> unlock ( )   ;
   }                              ;
+  this -> lock = nullptr         ;
 }
 
 Locker * Latcher::mutex(void) const

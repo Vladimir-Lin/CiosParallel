@@ -38,8 +38,10 @@ if(MSVC)
   add_definitions("/nologo")
   if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
     set(TARGET_ARCH x64)
+    add_definitions("-DCIOS_X64=1")
   elseif("${CMAKE_SIZEOF_VOID_P}" STREQUAL "4")
     set(TARGET_ARCH x86)
+    add_definitions("-DCIOS_X86=1")
   endif()
 endif(MSVC)
 
@@ -55,6 +57,7 @@ link_directories(${STARDATE_LIBRARY_DIRS})
 
 # Header
 set(HEADERS include/parallel.hpp)
+set(HEADERS src/Windows/PrivateParallel.hpp)
 
 # Source codes
 set(CORES
@@ -62,7 +65,8 @@ set(CORES
   src/Windows/Locker.cpp
   src/Windows/Latcher.cpp
   src/Windows/ThreadData.cpp
-  src/Windows/Thread.cpp)
+  src/Windows/Thread.cpp
+  src/Windows/PrivateParallel.cpp)
 
 # Handling pkg-config file
 configure_file(libparallel.pc.in libparallel.pc @ONLY)
@@ -87,4 +91,6 @@ else(BUILD_SHARED_LIBS)
 endif(BUILD_SHARED_LIBS)
 
 target_link_libraries(libparallel ${UUIDS_LIBRARIES})
+target_link_libraries(libparallel ${STARDATE_LIBRARIES})
 target_compile_options(libparallel PUBLIC ${UUIDS_CFLAGS_OTHER})
+target_compile_options(libparallel PUBLIC ${STARDATE_CFLAGS_OTHER})
