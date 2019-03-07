@@ -23,13 +23,13 @@ Lockerz::~Lockerz(void)
 Locker & Lockerz::operator [ ] (int64_t index)
 {
   LockerzHandler * ph = (LockerzHandler *) this -> PrivatePacket ;
-  return ( * ( ph->handler->GetLocker(index) ) )                 ;
+  return ( * ( ph -> handler -> GetLocker ( index ) ) )          ;
 }
 
 Locker & Lockerz::operator [ ] (std::string key)
 {
   LockerzHandler * ph = (LockerzHandler *) this -> PrivatePacket ;
-  return ( * ( ph->handler->GetLocker(key) ) )                   ;
+  return ( * ( ph -> handler -> GetLocker ( key ) ) )            ;
 }
 
 #ifndef DONT_USE_NAMESPACE

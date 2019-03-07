@@ -115,6 +115,84 @@ class LIBPARALLEL_EXPORT Latcher
 
 } ;
 
+class LIBPARALLEL_EXPORT Mutex
+{
+  public:
+
+    explicit Mutex   (void) ;
+    virtual ~Mutex   (void) ;
+
+    int      lock    (void) ;
+    int      unlock  (void) ;
+    int      locked  (void) ;
+    int      trylock (void) ;
+
+  protected:
+
+    void * PrivatePacket ;
+
+  private:
+
+} ;
+
+class LIBPARALLEL_EXPORT Mutexz
+{
+  public:
+
+    explicit Mutexz (void) ;
+    virtual ~Mutexz (void) ;
+
+    Mutex & operator [ ] (int64_t     index) ;
+    Mutex & operator [ ] (std::string key  ) ;
+
+  protected:
+
+    void * PrivatePacket ;
+
+  private:
+
+} ;
+
+class LIBPARALLEL_EXPORT Semaphore
+{
+  public:
+
+    explicit Semaphore  (int amount = 1) ;
+    virtual ~Semaphore  (void) ;
+
+    int      setAmount  (int amount) ;
+    void     acquire    (int n = 1) ;
+    int      available  (void) const ;
+    void     release    (int n = 1) ;
+    bool     tryAcquire (int n = 1) ;
+    bool     tryAcquire (int n, int timeoutMs) ;
+
+  protected:
+
+    void * PrivatePacket ;
+
+  private:
+
+} ;
+
+class LIBPARALLEL_EXPORT Semaphorez
+{
+  public:
+
+    explicit Semaphorez (void) ;
+    virtual ~Semaphorez (void) ;
+
+    Semaphore & operator [ ] (int64_t     index) ;
+    Semaphore & operator [ ] (std::string key  ) ;
+
+  protected:
+
+    void * PrivatePacket ;
+
+  private:
+
+} ;
+
 class LIBPARALLEL_EXPORT ThreadData : public Destroyer
 {
   public:

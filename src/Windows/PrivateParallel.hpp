@@ -132,6 +132,69 @@ typedef struct             {
   PrivateLockerz * handler ;
 } LockerzHandler           ;
 
+typedef struct  {
+  HANDLE mutex  ;
+  bool   locked ;
+} MutexHandler  ;
+
+class PrivateMutexz
+{
+  public:
+
+    explicit PrivateMutexz (void) ;
+    virtual ~PrivateMutexz (void) ;
+
+    Mutex * GetMutex       (int64_t     index) ;
+    Mutex * GetMutex       (std::string key  ) ;
+
+    void    SpinLock       (void) ;
+
+  protected:
+
+    std::map<int64_t    ,Mutex *> mutex    ;
+    std::map<std::string,Mutex *> sutex    ;
+    bool                          spinLock ;
+
+  private:
+
+} ;
+
+typedef struct            {
+  PrivateMutexz * handler ;
+} MutexzHandler           ;
+
+typedef struct  {
+  HANDLE semaphore  ;
+  int    amount     ;
+  int    acquired   ;
+} SemaphoreHandler  ;
+
+class PrivateSemaphorez
+{
+  public:
+
+    explicit    PrivateSemaphorez (void) ;
+    virtual    ~PrivateSemaphorez (void) ;
+
+    Semaphore * GetSemaphore      (int64_t     index) ;
+    Semaphore * GetSemaphore      (std::string key  ) ;
+
+    void        SpinLock          (void) ;
+
+  protected:
+
+    std::map<int64_t    ,Semaphore *> mutex    ;
+    std::map<std::string,Semaphore *> sutex    ;
+    bool                              spinLock ;
+
+  private:
+
+} ;
+
+typedef struct                {
+  PrivateSemaphorez * handler ;
+} SemaphorezHandler           ;
+
 #ifndef DONT_USE_NAMESPACE
 }
 #endif
