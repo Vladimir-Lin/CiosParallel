@@ -8,7 +8,7 @@ set ARCHPATH=%ARCHX%\%DLLX%\%BTYPE%
 set LIBPLACE=%CIOS%\lib\%ARCHPATH%
 set PKGPLACE=%CIOS%\Packages\%ARCHPATH%
 
-7z x %STARDATE%\Packages\%TARGET%.7z
+7z x %PARALLEL%\Packages\%TARGET%.7z
 
 cd %COMPILEPATH%\%TARGET%\lib\packages
 

@@ -24,9 +24,12 @@ ThreadData:: ThreadData    ( void    )
   this -> PrivatePacket = (void *) ptd                ;
   ptd  -> Thread        = nullptr                     ;
   ptd  -> ThreadID      = 0                           ;
+  ptd  -> ParentID      = 0                           ;
   ptd  -> dwThreadID    = 0                           ;
   ptd  -> Function      = nullptr                     ;
   ptd  -> Data          = nullptr                     ;
+  ptd  -> thread        = nullptr                     ;
+  ptd  -> threadData    = nullptr                     ;
 }
 
 ThreadData::~ThreadData(void)
@@ -40,15 +43,16 @@ bool ThreadData::Recycling(void)
 
 bool ThreadData::Destructor(void)
 {
-  if ( nullptr != this -> PrivatePacket )                                 {
-    PrivateThreadData * ptd = (PrivateThreadData *) this -> PrivatePacket ;
-    ///////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////
+  if ( nullptr == this -> PrivatePacket ) return false                  ;
+  PrivateThreadData * ptd = (PrivateThreadData *) this -> PrivatePacket ;
+  ///////////////////////////////////////////////////////////////////////
 
-    ///////////////////////////////////////////////////////////////////////
-    delete ptd                                                            ;
-    this -> PrivatePacket = nullptr                                       ;
-  }                                                                       ;
-  return true                                                             ;
+  ///////////////////////////////////////////////////////////////////////
+  delete ptd                                                            ;
+  this -> PrivatePacket = nullptr                                       ;
+  ///////////////////////////////////////////////////////////////////////
+  return true                                                           ;
 }
 
 void * ThreadData::Register(void *)
@@ -77,9 +81,9 @@ void ThreadData::Join(void)
   /////////////////////////////////////////////////////////////////////////
   if ( nullptr != this -> PrivatePacket )                                 {
     PrivateThreadData * ptd = (PrivateThreadData *) this -> PrivatePacket ;
-    ///////////////////////////////////////////////////////////////////////
-    ::WaitForSingleObject ( ptd -> Thread , INFINITE )                    ;
-    ///////////////////////////////////////////////////////////////////////
+    if ( nullptr != ptd -> Thread )                                       {
+      ::WaitForSingleObject ( ptd -> Thread , INFINITE )                  ;
+    }                                                                     ;
   }                                                                       ;
   /////////////////////////////////////////////////////////////////////////
   this -> Running = Recycle                                               ;
@@ -128,6 +132,7 @@ int ThreadData::setPriority(int priority)
 {
   if ( nullptr == this -> PrivatePacket ) return this -> Priority       ;
   PrivateThreadData * ptd = (PrivateThreadData *) this -> PrivatePacket ;
+  if ( nullptr == ptd -> Thread ) return this -> Priority               ;
   ///////////////////////////////////////////////////////////////////////
   ::SetThreadPriority  ( ptd -> Thread , priority )                     ;
   this -> Priority = ::GetThreadPriority ( ptd -> Thread )              ;
@@ -138,6 +143,7 @@ bool ThreadData::isAlive(void)
 {
   if ( nullptr == this -> PrivatePacket ) return false                  ;
   PrivateThreadData * ptd = (PrivateThreadData *) this -> PrivatePacket ;
+  if ( nullptr == ptd -> Thread ) return false                          ;
   ///////////////////////////////////////////////////////////////////////
   DWORD result = WaitForSingleObject ( ptd -> Thread , 0 )              ;
   if ( WAIT_OBJECT_0 == result ) return false                           ;
@@ -151,6 +157,18 @@ bool ThreadData::isSelf(void)
   PrivateThreadData * ptd = (PrivateThreadData *) this -> PrivatePacket ;
   ///////////////////////////////////////////////////////////////////////
   return ( WindowsThreadId ( ) == ptd -> ThreadID )                     ;
+}
+
+bool ThreadData::isEqual(int32_t id)
+{
+  return ( id == this -> Id ) ;
+}
+
+bool ThreadData::canContinue (void)
+{
+  if ( ! this -> isContinue          ) return false ;
+  if ( nullptr == this -> Controller ) return true  ;
+  return * ( this -> Controller )                   ;
 }
 
 void ThreadData::AssignId(void)
@@ -168,12 +186,14 @@ bool ThreadData::Run(void * data)
   PrivateThreadData * ptd = (PrivateThreadData *) this -> PrivatePacket      ;
   int ss = 0                                                                 ;
   if ( this -> Reservation ) ss = this -> StackSize                          ;
+  ptd -> ParentID = WindowsThreadId ( )                                      ;
+  ptd -> Data     = data                                                     ;
   #ifdef CIOS_X64
   ptd -> Thread = (HANDLE) ::_beginthreadex                                  (
                       NULL                                                   ,
                       ss                                                     ,
                       ptd -> Function                                        ,
-                      (LPVOID) data                                          ,
+                      (LPVOID) ptd                                           ,
                       0                                                      ,
                       & ptd -> dwThreadID                                  ) ;
   #elif CIOS_X86
@@ -181,16 +201,11 @@ bool ThreadData::Run(void * data)
                       NULL                                                   ,
                       ss                                                     ,
                       (unsigned int (__stdcall *)(void *)) ptd -> Function   ,
-                      (LPVOID) data                                          ,
+                      (LPVOID) ptd                                           ,
                       0                                                      ,
                       & ptd -> dwThreadID                                  ) ;
   #endif
-  if ( nullptr != ptd -> Thread )                                            {
-    ptd -> ThreadID = WindowsThreadId ( )                                    ;
-    ptd -> Data     = data                                                   ;
-    return true                                                              ;
-  }                                                                          ;
-  return false                                                               ;
+  return  ( nullptr != ptd -> Thread )                                       ;
 }
 
 bool ThreadData::Go(void * data)

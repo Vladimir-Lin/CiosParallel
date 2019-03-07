@@ -78,6 +78,24 @@ class LIBPARALLEL_EXPORT Locker
 
 } ;
 
+class LIBPARALLEL_EXPORT Lockerz
+{
+  public:
+
+    explicit Lockerz  (void) ;
+    virtual ~Lockerz  (void) ;
+
+    Locker & operator [ ] (int64_t     index) ;
+    Locker & operator [ ] (std::string key  ) ;
+
+  protected:
+
+    void * PrivatePacket ;
+
+  private:
+
+} ;
+
 class LIBPARALLEL_EXPORT Latcher
 {
   public:
@@ -142,6 +160,8 @@ class LIBPARALLEL_EXPORT ThreadData : public Destroyer
 
     bool           isAlive     (void) ;
     bool           isSelf      (void) ;
+    bool           isEqual     (int32_t Id) ;
+    bool           canContinue (void) ;
 
     void           AssignId    (void) ;
 
@@ -166,65 +186,76 @@ class LIBPARALLEL_EXPORT Thread : public Destroyer
 
     int                   running     ;
     int                   StackSize   ;
-    bool                  isContinue  ;
     bool                  Reservation ;
+    bool                  isContinue  ;
+    bool                * Controller  ;
 
-//    ThreadData            Data        ;
-//    QList<ThreadData *>   AllThreads  ;
+    explicit              Thread       (int stackSize,bool reservation) ;
+    explicit              Thread       (void) ;
+    virtual              ~Thread       (void) ;
 
-    explicit              Thread      (int stackSize,bool reservation) ;
-    explicit              Thread      (void) ;
-    virtual              ~Thread      (void) ;
+    virtual bool          Recycling    (void) ;
+    virtual bool          Destructor   (void) ;
 
-    virtual bool          Recycling   (void) ;
-    virtual bool          Destructor  (void) ;
+    virtual void        * Register     (void * package) ;
 
-    virtual void        * Register    (void * package) ;
+    void                  setKeys      (std::string thread,std::string data) ;
+    int                   setPriority  (int priority) ;
 
-    int                   setPriority (int priority) ;
-
-    virtual void          start       (void) ;
-    virtual ThreadData  * start       (int Type) ;
+    virtual void          start        (void) ;
+    virtual ThreadData  * start        (int Type) ;
+    virtual ThreadData  * start        (int Type,void * arguments) ;
 //    virtual ThreadData  * start       (int Type,VarArgs      & arguments) ;
 //    virtual ThreadData  * start       (int Type,XmlValue     & arguments) ;
 //    virtual ThreadData  * start       (int Type,ThreadFunction ExternalThread) ;
-    virtual ThreadData  * drawer      (void) ;
-    virtual int           DrawerId    (void) ;
-    virtual void          quit        (void) ;
-    virtual void          suspend     (void) ;
-    virtual void          resume      (void) ;
-    virtual void          terminate   (void) ;
-    virtual void          cleanup     (void) ;
-    virtual bool          proceed     (void) ;
-    virtual bool          finalize    (int interval = 20) ;
-    virtual bool          NotStopped  (void) ;
-    virtual bool          IsContinue  (void) ;
-    virtual bool          IsContinue  (bool go) ;
-    virtual bool          IsContinue  (int Id) ;
-    virtual bool          IsContinue  (ThreadData * data) ;
-    virtual bool          IsContinue  (bool go,ThreadData * data) ;
-    virtual bool          IsContinue  (int action,ThreadData * data) ;
+    virtual ThreadData  * drawer       (void) ;
+    virtual ThreadData  * drawer       (int Id) ;
+    virtual int           DrawerId     (void) ;
+    virtual void          quit         (void) ;
+    virtual void          suspend      (void) ;
+    virtual void          resume       (void) ;
+    virtual void          terminate    (void) ;
+    virtual void          cleanup      (void) ;
+    virtual bool          proceed      (void) ;
+    virtual bool          finalize     (int interval = 20) ;
+    virtual bool          NotStopped   (void) ;
+    virtual bool          IsContinue   (void) ;
+    virtual bool          IsContinue   (bool go) ;
+    virtual bool          IsContinue   (int Id) ;
+    virtual bool          IsContinue   (ThreadData * data) ;
+    virtual bool          IsContinue   (bool go,ThreadData * data) ;
+    virtual bool          IsContinue   (int action,ThreadData * data) ;
 //    virtual int           IsRunning   (QList<ThreadData *> & threads,bool purge = false) ;
-    virtual int           exit        (int exitcode) ;
+    virtual int           exit         (int exitcode) ;
 
-    void                  actualRun   (void) ;
-    void                  actualRun   (int Type,ThreadData * data) ;
-    void                  actualJoin  (void) ;
+    void                  actualRun    (void) ;
+    void                  actualRun    (int Type,ThreadData * data) ;
+    void                  actualJoin   (void) ;
 
   protected:
 
-    void * PrivatePacket ;
+    void   * PrivatePacket ;
+    Locker * lock          ;
 
-    virtual void          ThreadEvent (void) ;
-    virtual void          run         (void) ;
-    virtual void          run         (int Type,ThreadData * Data) ;
+    virtual void          ThreadEvent  (void) ;
+    virtual void          run          (void) ;
+    virtual void          run          (int Type,ThreadData * Data) ;
 
-    virtual bool          detection   (void) ;
-    virtual bool          recycle     (void) ;
+    virtual bool          detection    (void) ;
+    virtual bool          recycle      (void) ;
+
+    void                  sleep        (int64_t  seconds) ;
+    void                  msleep       (int64_t mseconds) ;
+    void                  usleep       (int64_t useconds) ;
+
+    void                  skip         (int64_t  seconds,int64_t intervalus=10000,bool * dropOut=nullptr) ;
+    void                  mskip        (int64_t mseconds,int64_t intervalus=1000 ,bool * dropOut=nullptr) ;
+    void                  uskip        (int64_t useconds,int64_t intervalus=10   ,bool * dropOut=nullptr) ;
 
   private:
 
-    Locker lock ;
+    void                  LockThread   (void) ;
+    void                  UnlockThread (void) ;
 
 } ;
 

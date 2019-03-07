@@ -1,13 +1,13 @@
-name=libstardate
+name=libparallel
 libdir=$${LIBPATH}
 includedir=$${INCLUDEPATH}
 lib=${name}.lib
 file=${libdir}/${lib}
 
-Name: libstardate
-Version: 0.0.1
-Description: Stellar Time Supports for CIOS
-URL: https://github.com/Vladimir-Lin/CiosTime
+Name: libparallel
+Version: @VERSION@
+Description: Parallel Supports for CIOS
+URL: https://github.com/Vladimir-Lin/CiosParallel
 Libs: -L${libdir} -l${name}
 Cflags: -I${includedir}
 

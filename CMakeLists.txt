@@ -50,6 +50,7 @@ pkg_check_modules(UUIDS REQUIRED UUIDs)
 pkg_check_modules(STARDATE REQUIRED libstardate)
 
 include_directories(include)
+include_directories(src/Windows)
 include_directories (${UUIDS_INCLUDE_DIRS})
 include_directories (${STARDATE_INCLUDE_DIRS})
 link_directories(${UUIDS_LIBRARY_DIRS})
@@ -63,16 +64,29 @@ set(HEADERS src/Windows/PrivateParallel.hpp)
 set(CORES
   src/parallel.cpp
   src/Windows/Locker.cpp
+  src/Windows/Lockerz.cpp
   src/Windows/Latcher.cpp
+  src/Windows/Mutex.cpp
+  src/Windows/Mutexz.cpp
+  src/Windows/Semaphore.cpp
+  src/Windows/Semaphorez.cpp
   src/Windows/ThreadData.cpp
   src/Windows/Thread.cpp
-  src/Windows/PrivateParallel.cpp)
+  src/Windows/PrivateParallel.cpp
+  src/Windows/PrivateLockerz.cpp
+  src/Windows/PrivateMutexz.cpp
+  src/Windows/PrivateSemaphorez.cpp)
 
 # Handling pkg-config file
 configure_file(libparallel.pc.in libparallel.pc @ONLY)
 
 if(BUILD_SHARED_LIBS)
   add_library(libparallel SHARED ${CORES} ${HEADERS})
+  target_link_libraries(libparallel PUBLIC kernel32)
+  target_link_libraries(libparallel PUBLIC ${UUIDS_LIBRARIES})
+  target_link_libraries(libparallel PUBLIC ${STARDATE_LIBRARIES})
+  target_compile_options(libparallel PUBLIC ${UUIDS_CFLAGS_OTHER})
+  target_compile_options(libparallel PUBLIC ${STARDATE_CFLAGS_OTHER})
 #  target_link_libraries(libparallel m)
   add_definitions("-DBUILD_SHARED_LIBS=1")
   add_definitions("-DEXPORT_LIBPARALLEL=1")
@@ -84,13 +98,13 @@ if(BUILD_SHARED_LIBS)
   install(FILES ${CMAKE_BINARY_DIR}/libparallel.pc DESTINATION lib/packages)
 else(BUILD_SHARED_LIBS)
   add_library(libparallel STATIC ${CORES} ${HEADERS})
+  target_link_libraries(libparallel PUBLIC kernel32)
+  target_link_libraries(libparallel PUBLIC ${UUIDS_LIBRARIES})
+  target_link_libraries(libparallel PUBLIC ${STARDATE_LIBRARIES})
+  target_compile_options(libparallel PUBLIC ${UUIDS_CFLAGS_OTHER})
+  target_compile_options(libparallel PUBLIC ${STARDATE_CFLAGS_OTHER})
 #  target_link_libraries(libnations m)
   install(TARGETS libparallel DESTINATION lib)
   install(FILES include/parallel.hpp DESTINATION include)
   install(FILES ${CMAKE_BINARY_DIR}/libparallel.pc DESTINATION lib/packages)
 endif(BUILD_SHARED_LIBS)
-
-target_link_libraries(libparallel ${UUIDS_LIBRARIES})
-target_link_libraries(libparallel ${STARDATE_LIBRARIES})
-target_compile_options(libparallel PUBLIC ${UUIDS_CFLAGS_OTHER})
-target_compile_options(libparallel PUBLIC ${STARDATE_CFLAGS_OTHER})
