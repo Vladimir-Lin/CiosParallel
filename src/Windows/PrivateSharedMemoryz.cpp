@@ -39,7 +39,7 @@ void PrivateSharedMemoryz::SpinLock(void)
   }                                         ;
 }
 
-Semaphore * PrivateSharedMemoryz::GetSharedMemory(int64_t index)
+SharedMemory * PrivateSharedMemoryz::GetSharedMemory(int64_t index)
 {
   SpinLock ( )                                  ;
   spinLock = true                               ;
@@ -52,7 +52,7 @@ Semaphore * PrivateSharedMemoryz::GetSharedMemory(int64_t index)
   return mutex [ index ]                        ;
 }
 
-Semaphore * PrivateSharedMemoryz::GetSharedMemory(std::string key)
+SharedMemory * PrivateSharedMemoryz::GetSharedMemory(std::string key)
 {
   SpinLock ( )                                      ;
   spinLock = true                                   ;
