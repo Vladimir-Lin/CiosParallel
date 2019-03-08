@@ -34,6 +34,7 @@ ThreadData:: ThreadData    ( void    )
 
 ThreadData::~ThreadData(void)
 {
+  Destructor ( ) ;
 }
 
 bool ThreadData::Interrupt(void)
@@ -60,14 +61,11 @@ bool ThreadData::Destructor(void)
   delete ptd                                                            ;
   this -> PrivatePacket = nullptr                                       ;
   ///////////////////////////////////////////////////////////////////////
-     printf("%s\n",__FUNCTION__) ;
-  ///////////////////////////////////////////////////////////////////////
   return true                                                           ;
 }
 
 void * ThreadData::Register(void *)
 {
-      printf("%s\n",__FUNCTION__) ;
   return nullptr ;
 }
 
@@ -206,7 +204,6 @@ bool ThreadData::Run(void * data)
   ptd -> ParentID = WindowsThreadId ( )                                      ;
   ptd -> Data     = data                                                     ;
   #ifdef CIOS_X64
-     printf("CIOS_X64\n") ;
   ptd -> Thread = (HANDLE) ::_beginthreadex                                  (
                       NULL                                                   ,
                       ss                                                     ,
@@ -216,7 +213,6 @@ bool ThreadData::Run(void * data)
                       & ptd -> dwThreadID                                  ) ;
   #endif
   #if CIOS_X86
-     printf("CIOS_X86\n") ;
   ptd -> Thread = (HANDLE) ::_beginthreadex                                  (
                       NULL                                                   ,
                       ss                                                     ,

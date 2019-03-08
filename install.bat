@@ -18,7 +18,7 @@ cmd /A /Q /K %PARALLEL%\scripts\install.bat x64 release shared
 cmd /A /Q /K %PARALLEL%\scripts\install.bat x64 debug   static
 cmd /A /Q /K %PARALLEL%\scripts\install.bat x64 debug   shared
 
-xcopy /Y %PARALLEL%\include\parallel.hpp %CIOSPATH%\include\parallel.hpp
+xcopy /Y %PARALLEL%\include\parallel.hpp %CIOS%\include\parallel.hpp
 
 cd %ORIGINAL%
 rd /S /Q %COMPILEPATH%

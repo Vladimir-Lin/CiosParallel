@@ -19,8 +19,8 @@ unsigned int SingleThread(void * arg)
   ::srand              ( (uint32_t) ::time ( nullptr ) ) ;
   ::srand              (            ::rand (         ) ) ;
   ////////////////////////////////////////////////////////
-  data    -> AssignId  (                               ) ;
   nthread -> running  = ThreadData::Active               ;
+  data    -> AssignId  (                               ) ;
   data    -> Start     (                               ) ;
   nthread -> actualRun (                               ) ;
   data    -> Stop      (                               ) ;
@@ -33,7 +33,6 @@ unsigned int SingleThread(void * arg)
 
 unsigned int MultiThread(void * arg)
 {
-       printf("MultiThread\n") ;
   PrivateThreadData * ptd = (PrivateThreadData *) arg    ;
   if ( nullptr == ptd ) return 0                         ;
   ////////////////////////////////////////////////////////
@@ -43,16 +42,10 @@ unsigned int MultiThread(void * arg)
   ::srand              ( (uint32_t) ::time ( nullptr ) ) ;
   ::srand              (            ::rand (         ) ) ;
   ////////////////////////////////////////////////////////
-      printf("AssignId\n") ;
   data    -> AssignId  (                               ) ;
-      printf("Start\n") ;
   data    -> Start     (                               ) ;
-      printf("actualRun\n") ;
   nthread -> actualRun ( data -> Type , data           ) ;
-      printf("Stop\n") ;
   data    -> Stop      (                               ) ;
-//      printf("cleanup\n") ;
-//  nthread -> cleanup   (                               ) ;
   ////////////////////////////////////////////////////////
   ::_endthreadex       ( 0                             ) ;
   ////////////////////////////////////////////////////////
@@ -71,7 +64,6 @@ Thread:: Thread        ( void            )
        , PrivatePacket ( nullptr         )
        , lock          ( new Locker ( )  )
 {
-      printf("Thread::Destroyer\n") ;
   PrivateHandler * ph = new PrivateHandler ( )  ;
   ph   -> handler = new ThreadHandler ( )       ;
   this -> PrivatePacket = (void *) ph           ;
@@ -88,7 +80,6 @@ Thread:: Thread        ( int stackSize , bool reservation )
        , PrivatePacket ( nullptr                          )
        , lock          ( new Locker ( )                   )
 {
-    printf("Thread::Destroyer\n") ;
   PrivateHandler * ph = new PrivateHandler ( )  ;
   ph   -> handler = new ThreadHandler ( )       ;
   this -> PrivatePacket = (void *) ph           ;
@@ -97,6 +88,7 @@ Thread:: Thread        ( int stackSize , bool reservation )
 
 Thread::~Thread(void)
 {
+  Destructor ( ) ;
 }
 
 bool Thread::Interrupt(void)
@@ -140,14 +132,11 @@ bool Thread::Destructor(void)
   delete ph                                                                  ;
   this -> PrivatePacket = nullptr                                            ;
   ////////////////////////////////////////////////////////////////////////////
-     printf("%s\n",__FUNCTION__) ;
-  ////////////////////////////////////////////////////////////////////////////
   return true                                                                ;
 }
 
 void * Thread::Register(void *)
 {
-    printf("%s\n",__FUNCTION__) ;
   return nullptr ;
 }
 
@@ -264,9 +253,7 @@ ThreadData * Thread::start(int Type)
 
 ThreadData * Thread::start(int Type,void * arguments)
 {
-    printf("%s\n",__FUNCTION__) ;
   cleanup ( )                                                                ;
-    printf("cleanup() ;\n") ;
   ////////////////////////////////////////////////////////////////////////////
   if ( nullptr == lock                  ) return nullptr                     ;
   if ( nullptr == this -> PrivatePacket ) return nullptr                     ;
@@ -275,7 +262,6 @@ ThreadData * Thread::start(int Type,void * arguments)
   ThreadData        * data = new ThreadData ( )                              ;
   PrivateThreadData * ptd  = (PrivateThreadData *) data -> Hidden ( )        ;
   ////////////////////////////////////////////////////////////////////////////
-      printf("this -> LockThread\n") ;
   this -> LockThread   ( )                                                   ;
   ////////////////////////////////////////////////////////////////////////////
   #ifndef DONT_USE_NAMESPACE
@@ -296,17 +282,14 @@ ThreadData * Thread::start(int Type,void * arguments)
   data -> Controller   = this -> Controller                                  ;
   data -> Id = ph -> handler -> LastestId ( ) + 1                            ;
   ////////////////////////////////////////////////////////////////////////////
-      printf("data -> Go ( data )\n") ;
   if ( data -> Go ( data ) )                                                 {
     ph -> handler -> append ( data )                                         ;
-    printf("ph -> handler -> append\n") ;
   } else                                                                     {
     delete data                                                              ;
     data = nullptr                                                           ;
   }                                                                          ;
   ////////////////////////////////////////////////////////////////////////////
   this -> UnlockThread ( )                                                   ;
-    printf("this -> UnlockThread\n") ;
   ////////////////////////////////////////////////////////////////////////////
   return data                                                                ;
 }
@@ -372,15 +355,12 @@ void Thread::cleanup(void)
   size_t                  cnt                                         ;
   /////////////////////////////////////////////////////////////////////
   cnt = ph -> handler -> GetStatus ( threads , ThreadData::Deactive ) ;
-      printf("Remain threads : %d\n",(int)cnt) ;
   /////////////////////////////////////////////////////////////////////
   if ( cnt <= 0 ) return                                              ;
   /////////////////////////////////////////////////////////////////////
   std::list<ThreadData *>::iterator it                                ;
   for ( it = threads . begin ( ) ; it != threads . end ( ) ; ++it )   {
-        printf("Join thread : %d\n",(int)(*it)->Id) ;
     (*it) -> Join ( )                                                 ;
-       printf("Remove thread : %d\n",(int)(*it)->Id) ;
     ph -> handler -> remove ( (*it) )                                 ;
     delete (*it)                                                      ;
   }                                                                   ;
@@ -570,7 +550,6 @@ void Thread::actualRun(void)
 
 void Thread::actualRun(int Type,ThreadData * data)
 {
-      printf("actualRun : %d\n",Type) ;
   run ( Type , data ) ;
 }
 

@@ -27,12 +27,14 @@ SOURCES     += $$SRCPATH/Windows/Semaphorez.cpp
 SOURCES     += $$SRCPATH/Windows/ThreadData.cpp
 SOURCES     += $$SRCPATH/Windows/Thread.cpp
 SOURCES     += $$SRCPATH/Windows/SharedMemory.cpp
+SOURCES     += $$SRCPATH/Windows/SharedMemoryz.cpp
 SOURCES     += $$SRCPATH/Windows/CpuUsage.cpp
 SOURCES     += $$SRCPATH/Windows/PrivateParallel.cpp
 SOURCES     += $$SRCPATH/Windows/PrivateLockerz.cpp
 SOURCES     += $$SRCPATH/Windows/PrivateMutexz.cpp
 SOURCES     += $$SRCPATH/Windows/PrivateSemaphorez.cpp
 SOURCES     += $$SRCPATH/Windows/PrivateSharedMemory.cpp
+SOURCES     += $$SRCPATH/Windows/PrivateSharedMemoryz.cpp
 SOURCES     += $$SRCPATH/Windows/PrivateCpuUsage.cpp
 
 OTHER_FILES += $$SRCROOT/CMakeLists.txt

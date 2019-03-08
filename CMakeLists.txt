@@ -73,12 +73,14 @@ set(CORES
   src/Windows/ThreadData.cpp
   src/Windows/Thread.cpp
   src/Windows/SharedMemory.cpp
+  src/Windows/SharedMemoryz.cpp
   src/Windows/CpuUsage.cpp
   src/Windows/PrivateParallel.cpp
   src/Windows/PrivateLockerz.cpp
   src/Windows/PrivateMutexz.cpp
   src/Windows/PrivateSemaphorez.cpp
   src/Windows/PrivateSharedMemory.cpp
+  src/Windows/PrivateSharedMemoryz.cpp
   src/Windows/PrivateCpuUsage.cpp)
 
 # Handling pkg-config file

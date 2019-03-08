@@ -225,6 +225,32 @@ typedef struct                  {
   PrivateSharedMemory * handler ;
 } SharedMemoryHandler           ;
 
+class PrivateSharedMemoryz
+{
+  public:
+
+    explicit       PrivateSharedMemoryz (void) ;
+    virtual       ~PrivateSharedMemoryz (void) ;
+
+    SharedMemory * GetSharedMemory      (int64_t     index) ;
+    SharedMemory * GetSharedMemory      (std::string key  ) ;
+
+    void           SpinLock             (void) ;
+
+  protected:
+
+    std::map<int64_t    ,SharedMemory *> mutex    ;
+    std::map<std::string,SharedMemory *> sutex    ;
+    bool                                 spinLock ;
+
+  private:
+
+} ;
+
+typedef struct                   {
+  PrivateSharedMemoryz * handler ;
+} SharedMemoryzHandler           ;
+
 class PrivateCpuUsage
 {
   public:

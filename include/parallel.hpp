@@ -234,9 +234,27 @@ class LIBPARALLEL_EXPORT SharedMemory
 
 } ;
 
+class LIBPARALLEL_EXPORT SharedMemoryz
+{
+  public:
+
+    explicit SharedMemoryz (void) ;
+    virtual ~SharedMemoryz (void) ;
+
+    SharedMemory & operator [ ] (int64_t     index) ;
+    SharedMemory & operator [ ] (std::string key  ) ;
+
+  protected:
+
+    void * PrivatePacket ;
+
+  private:
+
+} ;
+
 /****************************************************************************
  *                                                                          *
- *                                 Shared Memory                            *
+ *                                    CPU                                   *
  *                                                                          *
  ****************************************************************************/
 
