@@ -47,7 +47,9 @@ bool ThreadData::Destructor(void)
   if ( nullptr == this -> PrivatePacket ) return false                  ;
   PrivateThreadData * ptd = (PrivateThreadData *) this -> PrivatePacket ;
   ///////////////////////////////////////////////////////////////////////
-
+  if ( ptd -> Key . length ( ) > 0 )                                    {
+    Convoy::remove ( ptd -> Key , this )                                ;
+  }                                                                     ;
   ///////////////////////////////////////////////////////////////////////
   delete ptd                                                            ;
   this -> PrivatePacket = nullptr                                       ;
@@ -67,12 +69,18 @@ void * ThreadData::Hidden(void)
 
 void ThreadData::Start(void)
 {
-  this -> Running = Active ;
+  this -> Running   = Active               ;
+  this -> StartTime = StarDate::ustamp ( ) ;
 }
 
 void ThreadData::Stop(void)
 {
   this -> Running = Deactive ;
+}
+
+int64_t ThreadData::Elapsed(void) const
+{
+  return StarDate::ustamp ( ) - this -> StartTime ;
 }
 
 void ThreadData::Join(void)
@@ -189,6 +197,7 @@ bool ThreadData::Run(void * data)
   ptd -> ParentID = WindowsThreadId ( )                                      ;
   ptd -> Data     = data                                                     ;
   #ifdef CIOS_X64
+     printf("CIOS_X64\n") ;
   ptd -> Thread = (HANDLE) ::_beginthreadex                                  (
                       NULL                                                   ,
                       ss                                                     ,
@@ -196,7 +205,9 @@ bool ThreadData::Run(void * data)
                       (LPVOID) ptd                                           ,
                       0                                                      ,
                       & ptd -> dwThreadID                                  ) ;
-  #elif CIOS_X86
+  #endif
+  #if CIOS_X86
+     printf("CIOS_X86\n") ;
   ptd -> Thread = (HANDLE) ::_beginthreadex                                  (
                       NULL                                                   ,
                       ss                                                     ,
@@ -210,7 +221,7 @@ bool ThreadData::Run(void * data)
 
 bool ThreadData::Go(void * data)
 {
-  if ( Active == this -> Running ) return false ;
+  if ( Active == this -> Running ) return false                           ;
   if ( nullptr != this -> PrivatePacket )                                 {
     PrivateThreadData * ptd = (PrivateThreadData *) this -> PrivatePacket ;
     ///////////////////////////////////////////////////////////////////////

@@ -72,10 +72,14 @@ set(CORES
   src/Windows/Semaphorez.cpp
   src/Windows/ThreadData.cpp
   src/Windows/Thread.cpp
+  src/Windows/SharedMemory.cpp
+  src/Windows/CpuUsage.cpp
   src/Windows/PrivateParallel.cpp
   src/Windows/PrivateLockerz.cpp
   src/Windows/PrivateMutexz.cpp
-  src/Windows/PrivateSemaphorez.cpp)
+  src/Windows/PrivateSemaphorez.cpp
+  src/Windows/PrivateSharedMemory.cpp
+  src/Windows/PrivateCpuUsage.cpp)
 
 # Handling pkg-config file
 configure_file(libparallel.pc.in libparallel.pc @ONLY)
@@ -83,6 +87,7 @@ configure_file(libparallel.pc.in libparallel.pc @ONLY)
 if(BUILD_SHARED_LIBS)
   add_library(libparallel SHARED ${CORES} ${HEADERS})
   target_link_libraries(libparallel PUBLIC kernel32)
+  target_link_libraries(libparallel PUBLIC Psapi)
   target_link_libraries(libparallel PUBLIC ${UUIDS_LIBRARIES})
   target_link_libraries(libparallel PUBLIC ${STARDATE_LIBRARIES})
   target_compile_options(libparallel PUBLIC ${UUIDS_CFLAGS_OTHER})
@@ -99,6 +104,7 @@ if(BUILD_SHARED_LIBS)
 else(BUILD_SHARED_LIBS)
   add_library(libparallel STATIC ${CORES} ${HEADERS})
   target_link_libraries(libparallel PUBLIC kernel32)
+  target_link_libraries(libparallel PUBLIC Psapi)
   target_link_libraries(libparallel PUBLIC ${UUIDS_LIBRARIES})
   target_link_libraries(libparallel PUBLIC ${STARDATE_LIBRARIES})
   target_compile_options(libparallel PUBLIC ${UUIDS_CFLAGS_OTHER})

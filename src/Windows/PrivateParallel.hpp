@@ -75,6 +75,7 @@ class ThreadHandler
     std::list<ThreadData *> All       ;
     std::string             ThreadKey ;
     std::string             DataKey   ;
+    std::string             className ;
 
     explicit     ThreadHandler (void) ;
     virtual     ~ThreadHandler (void) ;
@@ -95,6 +96,8 @@ class ThreadHandler
 
     size_t       GetStatus     (std::list<ThreadData *> & threads ,
                                 ThreadData::ThreadState   state ) ;
+
+    void         DebugReport   (void) ;
 
   protected:
 
@@ -194,6 +197,76 @@ class PrivateSemaphorez
 typedef struct                {
   PrivateSemaphorez * handler ;
 } SemaphorezHandler           ;
+
+class PrivateSharedMemory
+{
+  public:
+
+    int64_t Size     ;
+    HANDLE  SHM      ;
+    char  * Data     ;
+    bool    attached ;
+    bool    created  ;
+
+    explicit PrivateSharedMemory (void) ;
+    virtual ~PrivateSharedMemory (void) ;
+
+    bool     create              (std::wstring key,int64_t Size) ;
+    bool     open                (std::wstring key,int64_t Size) ;
+    bool     close               (void) ;
+
+  protected:
+
+  private:
+
+} ;
+
+typedef struct                  {
+  PrivateSharedMemory * handler ;
+} SharedMemoryHandler           ;
+
+class PrivateCpuUsage
+{
+  public:
+
+    std::map<CPU::Features,std::string> FeatureNames ;
+
+    FILETIME      m_ftPrevSysKernel  ;
+    FILETIME      m_ftPrevSysUser    ;
+    FILETIME      m_ftPrevSysIdle    ;
+    FILETIME      m_ftPrevProcKernel ;
+    FILETIME      m_ftPrevProcUser   ;
+    short         m_nCpuUsage        ;
+    ULONGLONG     m_dwLastRun        ;
+    volatile LONG m_lRunCount        ;
+
+    explicit        PrivateCpuUsage  (void) ;
+    virtual        ~PrivateCpuUsage  (void) ;
+
+    int             Processors       (void) ;
+    const char    * GetCpuType       (void) ;
+    int             CacheLineSize    (void) ;
+    bool            FeatureExists    (CPU::Features feature) ;
+    bool            HasFeature       (CPU::Features feature) ;
+    uint32_t        GetFeatures      (void) ;
+    int64_t         Memory           (void) ;
+    CPU::PowerState Power            (int & seconds,int & percent) ;
+    short           GetUsage         (bool cpu = true) ;
+    bool            Tell             (ProcessDetails * process) ;
+
+    ULONGLONG       SubtractTimes    (const FILETIME & ftA, const FILETIME & ftB);
+    bool            EnoughTimePassed (void);
+    inline bool     IsFirstRun       (void) const { return (m_dwLastRun == 0); }
+
+  protected:
+
+  private:
+
+} ;
+
+typedef struct              {
+  PrivateCpuUsage * handler ;
+} CpuUsageHandler           ;
 
 #ifndef DONT_USE_NAMESPACE
 }

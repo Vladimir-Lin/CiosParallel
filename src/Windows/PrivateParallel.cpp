@@ -80,13 +80,15 @@ ThreadData * ThreadHandler::find(int Id)
 
 size_t ThreadHandler::append(ThreadData * thread)
 {
-  if ( nullptr != thread )              {
-    if ( DataKey . length ( ) > 0 )     {
-      Convoy::join ( DataKey , thread ) ;
-    }                                   ;
-    this -> All . push_back ( thread )  ;
-  }                                     ;
-  return this -> Threads ( )            ;
+  if ( nullptr != thread )                                                 {
+    if ( DataKey . length ( ) > 0 )                                        {
+      PrivateThreadData * ptd = (PrivateThreadData *) thread -> Hidden ( ) ;
+      ptd -> Key = DataKey                                                 ;
+      Convoy::join ( DataKey , thread )                                    ;
+    }                                                                      ;
+    this -> All . push_back ( thread )                                     ;
+  }                                                                        ;
+  return this -> Threads ( )                                               ;
 }
 
 size_t ThreadHandler::remove(ThreadData * thread)
@@ -108,6 +110,34 @@ size_t ThreadHandler::GetStatus            (
     }                                                              ;
   }                                                                ;
   return threads . size ( )                                        ;
+}
+
+void ThreadHandler::DebugReport(void)
+{
+  #ifdef CIOSDEBUG
+  ////////////////////////////////////////////////////////////////////////////
+  if ( this -> className . length ( ) > 0 )                                  {
+    CiosDebugger ( "%s(%s) => %d\n"                                          ,
+                   __FUNCTION__                                              ,
+                   this -> className . c_str ( )                             ,
+                   this -> Data . Running                                  ) ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  std::list<ThreadData *>::iterator it                                       ;
+  for ( it = All . begin ( ) ; it != All . end ( ) ; ++it )                  {
+    ThreadData * d = (ThreadData *) (*it)                                    ;
+    CiosDebugger ( "%d => %d(%d)"                                            ,
+                   d -> Id                                                   ,
+                   d -> Type                                                 ,
+                   d -> Running                                            ) ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  if ( this -> className . length ( ) > 0 )                                  {
+    CiosDebugger ( "Thread `%s` finalizing\n"                                ,
+                   this -> className . c_str ( )                           ) ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+#endif
 }
 
 #ifndef DONT_USE_NAMESPACE

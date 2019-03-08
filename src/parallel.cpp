@@ -13,6 +13,20 @@
 namespace PARALLEL_NAMESPACE {
 #endif
 
+void PrintDebugger(const char * fmt,...)
+{
+  va_list args             ;
+  va_start ( args , fmt  ) ;
+  vprintf  ( fmt  , args ) ;
+  va_end   ( args        ) ;
+}
+
+DebugFunction CiosDebugger = PrintDebugger ;
+
+void setDebugFunction(DebugFunction debugger)
+{
+  CiosDebugger = debugger ;
+}
 
 #ifndef DONT_USE_NAMESPACE
 }

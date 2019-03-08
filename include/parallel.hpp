@@ -24,7 +24,12 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <varargs.h>
 #include <time.h>
+
+#include <list>
 
 #include "UUIDs.hpp"
 #include "stardate.hpp"
@@ -45,6 +50,11 @@ namespace PARALLEL_NAMESPACE {
 #pragma pack(push,1)
 
 #pragma pack(pop)
+
+typedef void (*DebugFunction)(const char * fmt,...) ;
+
+extern LIBPARALLEL_EXPORT void setDebugFunction(DebugFunction debugger) ;
+extern LIBPARALLEL_EXPORT DebugFunction CiosDebugger ;
 
 // A light version of Mutex
 class LIBPARALLEL_EXPORT Locker
@@ -193,6 +203,153 @@ class LIBPARALLEL_EXPORT Semaphorez
 
 } ;
 
+/*****************************************************************************
+ *                                                                           *
+ *                                 Shared Memory                             *
+ *                                                                           *
+ *****************************************************************************/
+
+class LIBPARALLEL_EXPORT SharedMemory
+{
+  public:
+
+    explicit SharedMemory (void) ;
+    virtual ~SharedMemory (void) ;
+
+    bool     Create       (std::string  key,int64_t Size) ;
+    bool     Create       (std::wstring key,int64_t Size) ;
+    bool     Open         (std::string  key,int64_t Size) ;
+    bool     Open         (std::wstring key,int64_t Size) ;
+    int64_t  MemorySize   (void) ;
+    bool     Close        (void) ;
+    char *   Memory       (void) ;
+    bool     isAttached   (void) const ;
+    bool     isCreated    (void) const ;
+
+  protected :
+
+    void * PrivatePacket ;
+
+  private:
+
+} ;
+
+/****************************************************************************
+ *                                                                          *
+ *                                 Shared Memory                            *
+ *                                                                          *
+ ****************************************************************************/
+
+#pragma pack(push,1)
+
+typedef struct            { // Total 1024 bytes
+  int32_t  Initialized    ; // Details was initialized
+  int32_t  Processors     ; // Machine processors
+  int64_t  Memory         ; // Total memory size
+  int64_t  Cache          ; // Cache line size
+  uint64_t Features       ; // CPU features
+  char     Name   [ 224 ] ; // CPU name
+  char     Buffer [ 768 ] ; // For internal use only
+} CpuDetails              ;
+
+typedef struct                 { // Total 1024 bytes
+  int32_t  occupied            ; // This ProcessDetails space is occupied
+  char     application [ 256 ] ; // Application name
+  uint64_t instance            ; // Instance number
+  int32_t  openmp              ; // OpenMP process number
+  int64_t  peak                ; // Peak working memory size
+  int64_t  working             ; // Working memory size
+  int64_t  page                ; // Page memory file usage
+  int32_t  machine             ; // Machine CPU usage, 0 ~ 10000
+  int32_t  process             ; // Process CPU usage, 0 ~ 10000
+  int64_t  timestamp           ; // RDTSC, Time Stamp Counter
+  int64_t  registered          ; // Registered startup Time Stamp Counter
+  int64_t  updated             ; // Lastest updated Time Stamp Counter
+  int32_t  port                ; // Communication TCP port
+  int32_t  interval            ; // Update interval
+  int32_t  load                ; // A number between 0 ~ 100 specifies physical memory is in use
+  int64_t  total               ; // total actual physical memory
+  int64_t  available           ; // available physical memory
+  int64_t  virtualTotal        ; // total actual virtual memory
+  int64_t  virtualAvailable    ; // total available virtual memory
+  int32_t  offset              ; // private data offset
+  uint64_t flags               ; // Process Flags
+  char     buffer      [ 640 ] ; // For internal use only
+} ProcessDetails               ;
+
+#define PROCESS_DETAILS_OFFSET 640
+
+#pragma pack(pop)
+
+namespace CPU
+{
+
+typedef enum              {
+  _RDTSC     = 0x00000001 ,
+  _ALTIVEC   = 0x00000002 ,
+  _MMX       = 0x00000004 ,
+  _3DNOW     = 0x00000008 ,
+  _SSE       = 0x00000010 ,
+  _SSE2      = 0x00000020 ,
+  _SSE3      = 0x00000040 ,
+  _SSE41     = 0x00000100 ,
+  _SSE42     = 0x00000200 }
+  Features                ;
+
+typedef enum              {
+  Unknown    = 0          , // < cannot determine power status
+  OnBattery  = 1          , // < Not plugged in, running on the battery
+  NoBattery  = 2          , // < Plugged in, no battery available
+  Charging   = 3          , // < Plugged in, charging battery
+  Charged    = 4          } // < Plugged in, battery charged
+  PowerState              ;
+
+class LIBPARALLEL_EXPORT Usage
+{
+  public:
+
+    explicit     Usage            (void) ;
+    virtual     ~Usage            (void) ;
+
+    static bool  Tell             (CpuDetails * details) ;
+
+    std::string  Cpu              (void) ;
+    int          Processors       (void) ;
+    int64_t      Memory           (void) ;
+    bool         Has              (Features feature) ;
+    std::string  Name             (Features feature) ;
+    int          CacheLineSize    (void) ;
+    uint32_t     GetFeatures      (void) ;
+    int64_t      Timestamp        (void) ; // RDTSC, Time Stamp Counter
+    short        GetUsage         (bool cpu = true) ;
+    bool         Tell             (ProcessDetails * process) ;
+
+    /**
+     *  Get the current power supply details.
+     *
+     *  secs : Seconds of battery life left. You can pass a NULL here if
+     *         you don't care. Will return -1 if we can't determine a
+     *         value, or we're not running on a battery.
+     *
+     *  pct : Percentage of battery life left, between 0 and 100. You can
+     *        pass a NULL here if you don't care. Will return -1 if we
+     *        can't determine a value, or we're not running on a battery.
+     *
+     *  return: The state of the battery (if any).
+     */
+
+    PowerState   Power (int & seconds,int & percent) ;
+
+  protected:
+
+    void * PrivatePacket ;
+
+  private:
+
+} ;
+
+}
+
 class LIBPARALLEL_EXPORT ThreadData : public Destroyer
 {
   public:
@@ -211,6 +368,7 @@ class LIBPARALLEL_EXPORT ThreadData : public Destroyer
     int64_t        Status      ;
     int32_t        Running     ;
     int32_t        StackSize   ;
+    int64_t        StartTime   ;
     bool           Reservation ;
     bool           isContinue  ;
     bool         * Controller  ;
@@ -240,6 +398,7 @@ class LIBPARALLEL_EXPORT ThreadData : public Destroyer
     bool           isSelf      (void) ;
     bool           isEqual     (int32_t Id) ;
     bool           canContinue (void) ;
+    int64_t        Elapsed     (void) const ;
 
     void           AssignId    (void) ;
 
@@ -277,18 +436,21 @@ class LIBPARALLEL_EXPORT Thread : public Destroyer
 
     virtual void        * Register     (void * package) ;
 
+    void                  setClassName (std::string name) ;
     void                  setKeys      (std::string thread,std::string data) ;
     int                   setPriority  (int priority) ;
 
     virtual void          start        (void) ;
     virtual ThreadData  * start        (int Type) ;
     virtual ThreadData  * start        (int Type,void * arguments) ;
-//    virtual ThreadData  * start       (int Type,VarArgs      & arguments) ;
-//    virtual ThreadData  * start       (int Type,XmlValue     & arguments) ;
-//    virtual ThreadData  * start       (int Type,ThreadFunction ExternalThread) ;
+
+//    virtual ThreadData  * start       (int Type,VarArgs  & arguments) ;
+//    virtual ThreadData  * start       (int Type,XmlValue & arguments) ;
+
     virtual ThreadData  * drawer       (void) ;
     virtual ThreadData  * drawer       (int Id) ;
     virtual int           DrawerId     (void) ;
+
     virtual void          quit         (void) ;
     virtual void          suspend      (void) ;
     virtual void          resume       (void) ;
@@ -296,15 +458,21 @@ class LIBPARALLEL_EXPORT Thread : public Destroyer
     virtual void          cleanup      (void) ;
     virtual bool          proceed      (void) ;
     virtual bool          finalize     (int interval = 20) ;
+
     virtual bool          NotStopped   (void) ;
+
     virtual bool          IsContinue   (void) ;
     virtual bool          IsContinue   (bool go) ;
     virtual bool          IsContinue   (int Id) ;
     virtual bool          IsContinue   (ThreadData * data) ;
     virtual bool          IsContinue   (bool go,ThreadData * data) ;
     virtual bool          IsContinue   (int action,ThreadData * data) ;
-//    virtual int           IsRunning   (QList<ThreadData *> & threads,bool purge = false) ;
+
+    virtual int           IsRunning    (std::list<ThreadData *> & threads,bool purge = false) ;
     virtual int           exit         (int exitcode) ;
+
+    int64_t               Elapsed     (void) ;
+    int64_t               Elapsed     (int Id) ;
 
     void                  actualRun    (void) ;
     void                  actualRun    (int Type,ThreadData * data) ;
@@ -317,7 +485,12 @@ class LIBPARALLEL_EXPORT Thread : public Destroyer
 
     virtual void          ThreadEvent  (void) ;
     virtual void          run          (void) ;
+
+    #ifndef DONT_USE_NAMESPACE
+    virtual void          run          (int Type,PARALLEL_NAMESPACE::ThreadData * Data) ;
+    #else
     virtual void          run          (int Type,ThreadData * Data) ;
+    #endif
 
     virtual bool          detection    (void) ;
     virtual bool          recycle      (void) ;

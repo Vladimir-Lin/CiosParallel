@@ -33,6 +33,7 @@ unsigned int SingleThread(void * arg)
 
 unsigned int MultiThread(void * arg)
 {
+       printf("MultiThread\n") ;
   PrivateThreadData * ptd = (PrivateThreadData *) arg    ;
   if ( nullptr == ptd ) return 0                         ;
   ////////////////////////////////////////////////////////
@@ -42,10 +43,15 @@ unsigned int MultiThread(void * arg)
   ::srand              ( (uint32_t) ::time ( nullptr ) ) ;
   ::srand              (            ::rand (         ) ) ;
   ////////////////////////////////////////////////////////
+      printf("AssignId\n") ;
   data    -> AssignId  (                               ) ;
+      printf("Start\n") ;
   data    -> Start     (                               ) ;
+      printf("actualRun\n") ;
   nthread -> actualRun ( data -> Type , data           ) ;
+      printf("Stop\n") ;
   data    -> Stop      (                               ) ;
+      printf("cleanup\n") ;
   nthread -> cleanup   (                               ) ;
   ////////////////////////////////////////////////////////
   ::_endthreadex       ( 0                             ) ;
@@ -65,9 +71,11 @@ Thread:: Thread        ( void            )
        , PrivatePacket ( nullptr         )
        , lock          ( new Locker ( )  )
 {
-  PrivateHandler * ph = new PrivateHandler ( ) ;
-  ph   -> handler = new ThreadHandler ( )      ;
-  this -> PrivatePacket = (void *) ph          ;
+      printf("Thread::Destroyer\n") ;
+  PrivateHandler * ph = new PrivateHandler ( )  ;
+  ph   -> handler = new ThreadHandler ( )       ;
+  this -> PrivatePacket = (void *) ph           ;
+  ph   -> handler -> className = "CIOS::Thread" ;
 }
 
 Thread:: Thread        ( int stackSize , bool reservation )
@@ -80,10 +88,11 @@ Thread:: Thread        ( int stackSize , bool reservation )
        , PrivatePacket ( nullptr                          )
        , lock          ( new Locker ( )                   )
 {
-//  Data . Properties [ "Class" ] = QVariant(QString("N::Thread")) ;
-  PrivateHandler * ph = new PrivateHandler ( ) ;
-  ph   -> handler = new ThreadHandler ( )      ;
-  this -> PrivatePacket = (void *) ph          ;
+    printf("Thread::Destroyer\n") ;
+  PrivateHandler * ph = new PrivateHandler ( )  ;
+  ph   -> handler = new ThreadHandler ( )       ;
+  this -> PrivatePacket = (void *) ph           ;
+  ph   -> handler -> className = "CIOS::Thread" ;
 }
 
 Thread::~Thread(void)
@@ -97,32 +106,35 @@ bool Thread::Recycling(void)
 
 bool Thread::Destructor(void)
 {
-  ////////////////////////////////////
-    /*
-    #ifdef TRACECLASSES
-    QString cns = Data.Properties["Class"].toString()           ;
-    N::printf(QString("%1(%2) => %3").arg(FunctionString).arg(cns).arg(running),true,true) ;
-    if ( AllThreads . count ( ) > 0 )                           {
-      for (int i=0;i<AllThreads.count();i++)                    {
-        ThreadData * d = AllThreads[i]                          ;
-        N::printf(QString("%1 => %2(%3)").arg(d->Id).arg(d->Type).arg(d->Running),true,true) ;
-      }                                                         ;
-    }                                                           ;
-    N::printf ( QString("%1 finalize").arg(cns) , true , true ) ;
-    #endif
-    finalize ( 5 )  ;
-    delete tsLocker ;
-    #ifdef TRACECLASSES
-    N::printf(QString("%1 stopped").arg(cns),true,true)         ;
-    #endif
-    */
-  ////////////////////////////////////
-  if ( nullptr != lock ) delete lock ;
-  lock = nullptr                     ;
-  ////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////
+  if ( nullptr == this -> PrivatePacket ) return false                       ;
+  PrivateHandler * ph = ( PrivateHandler *) this -> PrivatePacket            ;
+  ////////////////////////////////////////////////////////////////////////////
   #ifdef CIOSDEBUG
+  ph -> handler -> DebugReport ( )                                           ;
   #endif
-  return true                        ;
+  ////////////////////////////////////////////////////////////////////////////
+  finalize ( 5 )                                                             ;
+  ////////////////////////////////////////////////////////////////////////////
+  if ( nullptr != lock ) delete lock                                         ;
+  lock = nullptr                                                             ;
+  ////////////////////////////////////////////////////////////////////////////
+  #ifdef CIOSDEBUG
+  if ( ph -> handler -> className . length ( ) > 0 )                         {
+    CiosDebugger ( "Thread `%s` stopped\n"                                   ,
+                   ph   -> handler -> className . c_str ( )                ) ;
+  }                                                                          ;
+  #endif
+  ////////////////////////////////////////////////////////////////////////////
+  if ( ph -> handler -> ThreadKey . length ( ) > 0 )                         {
+    Convoy::remove ( ph -> handler -> ThreadKey , this )                     ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  delete ph -> handler                                                       ;
+  delete ph                                                                  ;
+  this -> PrivatePacket = nullptr                                            ;
+  ////////////////////////////////////////////////////////////////////////////
+  return true                                                                ;
 }
 
 void * Thread::Register(void *)
@@ -172,6 +184,13 @@ void Thread::uskip(int64_t useconds,int64_t intervalus,bool * dropOut)
   StarDate::uskip ( useconds , intervalus , dropOut ) ;
 }
 
+void Thread::setClassName(std::string name)
+{
+  if ( nullptr == this -> PrivatePacket ) return                  ;
+  PrivateHandler * ph = ( PrivateHandler *) this -> PrivatePacket ;
+  ph -> handler -> className = name                               ;
+}
+
 void Thread::setKeys(std::string t,std::string d)
 {
   if ( nullptr == this -> PrivatePacket ) return                  ;
@@ -204,7 +223,12 @@ void Thread::start(void)
   ////////////////////////////////////////////////////////////////////////////
   this -> LockThread   ( )                                                   ;
   ////////////////////////////////////////////////////////////////////////////
-  ptd  -> Function     = SingleThread                                        ;
+  #ifndef DONT_USE_NAMESPACE
+  ptd  -> Function     = PARALLEL_NAMESPACE :: SingleThread                  ;
+  #else
+  ptd  -> Function     = ::SingleThread                                      ;
+  #endif
+  ////////////////////////////////////////////////////////////////////////////
   ptd  -> thread       = this                                                ;
   ptd  -> threadData   = data                                                ;
   ////////////////////////////////////////////////////////////////////////////
@@ -230,7 +254,9 @@ ThreadData * Thread::start(int Type)
 
 ThreadData * Thread::start(int Type,void * arguments)
 {
+    printf("%s\n",__FUNCTION__) ;
   cleanup ( )                                                                ;
+    printf("cleanup() ;\n") ;
   ////////////////////////////////////////////////////////////////////////////
   if ( nullptr == lock                  ) return nullptr                     ;
   if ( nullptr == this -> PrivatePacket ) return nullptr                     ;
@@ -239,9 +265,15 @@ ThreadData * Thread::start(int Type,void * arguments)
   ThreadData        * data = new ThreadData ( )                              ;
   PrivateThreadData * ptd  = (PrivateThreadData *) data -> Hidden ( )        ;
   ////////////////////////////////////////////////////////////////////////////
+      printf("this -> LockThread\n") ;
   this -> LockThread   ( )                                                   ;
   ////////////////////////////////////////////////////////////////////////////
-  ptd  -> Function     = MultiThread                                         ;
+  #ifndef DONT_USE_NAMESPACE
+  ptd  -> Function     = PARALLEL_NAMESPACE :: MultiThread                   ;
+  #else
+  ptd  -> Function     = ::MultiThread                                       ;
+  #endif
+  ////////////////////////////////////////////////////////////////////////////
   ptd  -> thread       = this                                                ;
   ptd  -> threadData   = data                                                ;
   ////////////////////////////////////////////////////////////////////////////
@@ -254,13 +286,17 @@ ThreadData * Thread::start(int Type,void * arguments)
   data -> Controller   = this -> Controller                                  ;
   data -> Id = ph -> handler -> LastestId ( ) + 1                            ;
   ////////////////////////////////////////////////////////////////////////////
+      printf("data -> Go ( data )\n") ;
   if ( data -> Go ( data ) )                                                 {
     ph -> handler -> append ( data )                                         ;
+    printf("ph -> handler -> append\n") ;
   } else                                                                     {
     delete data                                                              ;
+    data = nullptr                                                           ;
   }                                                                          ;
   ////////////////////////////////////////////////////////////////////////////
   this -> UnlockThread ( )                                                   ;
+    printf("this -> UnlockThread\n") ;
   ////////////////////////////////////////////////////////////////////////////
   return data                                                                ;
 }
@@ -461,6 +497,56 @@ bool Thread::IsContinue(int action,ThreadData * data)
   return IsContinue ( data ) ;
 }
 
+int Thread::IsRunning(std::list<ThreadData *> & threads,bool purge)
+{
+  if ( threads . size ( ) <= 0 ) return 0                            ;
+  if ( nullptr == this -> PrivatePacket ) return 0                   ;
+  PrivateHandler * ph = ( PrivateHandler *) this -> PrivatePacket    ;
+  ////////////////////////////////////////////////////////////////////
+  int                               count = 0                        ;
+  std::list<ThreadData *>           stopped                          ;
+  std::list<ThreadData *>::iterator it                               ;
+  ThreadData                      * td                               ;
+  int                               R                                ;
+  for ( it = threads . begin ( ) ; it != threads . end ( ) ; ++it )  {
+    td = (*it)                                                       ;
+    R  = td -> Running                                               ;
+    switch ( R )                                                     {
+      case ThreadData::Idle                                          :
+      case ThreadData::Recycle                                       :
+      break                                                          ;
+      case ThreadData::Active                                        :
+        count ++                                                     ;
+      break                                                          ;
+      case ThreadData::Deactive                                      :
+        stopped . push_back ( td )                                   ;
+      break                                                          ;
+    }                                                                ;
+  }                                                                  ;
+  ////////////////////////////////////////////////////////////////////
+  if ( ! purge ) return count                                        ;
+  ////////////////////////////////////////////////////////////////////
+  for ( it = stopped . begin ( ) ; it != stopped . end ( ) ; ++it )  {
+    ph -> handler -> remove ( (*it) )                                ;
+  }                                                                  ;
+  ////////////////////////////////////////////////////////////////////
+  return count                                                       ;
+}
+
+int64_t Thread::Elapsed(void)
+{
+  ThreadData * d = this -> drawer ( ) ;
+  if ( nullptr == d ) return false    ;
+  return d -> Elapsed ( )             ;
+}
+
+int64_t Thread::Elapsed(int Id)
+{
+  ThreadData * d = this -> drawer ( Id ) ;
+  if ( nullptr == d ) return false       ;
+  return d -> Elapsed ( )                ;
+}
+
 int Thread::exit(int exitcode)
 {
   ::ExitThread ( (DWORD) exitcode ) ;
@@ -474,6 +560,7 @@ void Thread::actualRun(void)
 
 void Thread::actualRun(int Type,ThreadData * data)
 {
+      printf("actualRun : %d\n",Type) ;
   run ( Type , data ) ;
 }
 
