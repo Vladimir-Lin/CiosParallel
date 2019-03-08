@@ -386,6 +386,7 @@ class LIBPARALLEL_EXPORT ThreadData : public Destroyer
     int64_t        Status      ;
     int32_t        Running     ;
     int32_t        StackSize   ;
+    int64_t        CallTime    ;
     int64_t        StartTime   ;
     bool           Reservation ;
     bool           isContinue  ;
@@ -417,6 +418,7 @@ class LIBPARALLEL_EXPORT ThreadData : public Destroyer
     bool           isSelf      (void) ;
     bool           isEqual     (int32_t Id) ;
     bool           canContinue (void) ;
+    int64_t        Latency     (void) const ;
     int64_t        Elapsed     (void) const ;
 
     void           AssignId    (void) ;

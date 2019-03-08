@@ -13,6 +13,8 @@ ThreadData:: ThreadData    ( void    )
            , Status        ( 0       )
            , Running       ( Idle    )
            , StackSize     ( 0       )
+           , CallTime      ( 0       )
+           , StartTime     ( 0       )
            , Reservation   ( false   )
            , isContinue    ( true    )
            , Controller    ( nullptr )
@@ -83,6 +85,11 @@ void ThreadData::Start(void)
 void ThreadData::Stop(void)
 {
   this -> Running = Deactive ;
+}
+
+int64_t ThreadData::Latency(void) const
+{
+  return ( ( this -> CallTime ) - ( this -> StartTime ) ) ;
 }
 
 int64_t ThreadData::Elapsed(void) const
@@ -201,8 +208,9 @@ bool ThreadData::Run(void * data)
   PrivateThreadData * ptd = (PrivateThreadData *) this -> PrivatePacket      ;
   int ss = 0                                                                 ;
   if ( this -> Reservation ) ss = this -> StackSize                          ;
-  ptd -> ParentID = WindowsThreadId ( )                                      ;
-  ptd -> Data     = data                                                     ;
+  ptd  -> ParentID = WindowsThreadId ( )                                     ;
+  ptd  -> Data     = data                                                    ;
+  this -> CallTime = StarDate::ustamp ( )                                    ;
   #ifdef CIOS_X64
   ptd -> Thread = (HANDLE) ::_beginthreadex                                  (
                       NULL                                                   ,
