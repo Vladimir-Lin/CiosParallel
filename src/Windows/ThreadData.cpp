@@ -36,6 +36,12 @@ ThreadData::~ThreadData(void)
 {
 }
 
+bool ThreadData::Interrupt(void)
+{
+  this -> isContinue = false ;
+  return true                ;
+}
+
 bool ThreadData::Recycling(void)
 {
   return true ;
@@ -54,11 +60,14 @@ bool ThreadData::Destructor(void)
   delete ptd                                                            ;
   this -> PrivatePacket = nullptr                                       ;
   ///////////////////////////////////////////////////////////////////////
+     printf("%s\n",__FUNCTION__) ;
+  ///////////////////////////////////////////////////////////////////////
   return true                                                           ;
 }
 
 void * ThreadData::Register(void *)
 {
+      printf("%s\n",__FUNCTION__) ;
   return nullptr ;
 }
 

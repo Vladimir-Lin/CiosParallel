@@ -51,8 +51,8 @@ unsigned int MultiThread(void * arg)
   nthread -> actualRun ( data -> Type , data           ) ;
       printf("Stop\n") ;
   data    -> Stop      (                               ) ;
-      printf("cleanup\n") ;
-  nthread -> cleanup   (                               ) ;
+//      printf("cleanup\n") ;
+//  nthread -> cleanup   (                               ) ;
   ////////////////////////////////////////////////////////
   ::_endthreadex       ( 0                             ) ;
   ////////////////////////////////////////////////////////
@@ -99,6 +99,12 @@ Thread::~Thread(void)
 {
 }
 
+bool Thread::Interrupt(void)
+{
+  this -> isContinue = false ;
+  return true                ;
+}
+
 bool Thread::Recycling(void)
 {
   return true ;
@@ -134,11 +140,14 @@ bool Thread::Destructor(void)
   delete ph                                                                  ;
   this -> PrivatePacket = nullptr                                            ;
   ////////////////////////////////////////////////////////////////////////////
+     printf("%s\n",__FUNCTION__) ;
+  ////////////////////////////////////////////////////////////////////////////
   return true                                                                ;
 }
 
 void * Thread::Register(void *)
 {
+    printf("%s\n",__FUNCTION__) ;
   return nullptr ;
 }
 
@@ -196,6 +205,7 @@ void Thread::setKeys(std::string t,std::string d)
   if ( nullptr == this -> PrivatePacket ) return                  ;
   PrivateHandler * ph = ( PrivateHandler *) this -> PrivatePacket ;
   ph -> handler -> setKeys ( t , d )                              ;
+  Convoy::join ( t , this )                                       ;
 }
 
 int Thread::setPriority(int priority)
@@ -361,18 +371,18 @@ void Thread::cleanup(void)
   std::list<ThreadData *> threads                                     ;
   size_t                  cnt                                         ;
   /////////////////////////////////////////////////////////////////////
-  LockThread   ( )                                                    ;
   cnt = ph -> handler -> GetStatus ( threads , ThreadData::Deactive ) ;
-  UnlockThread ( )                                                    ;
+      printf("Remain threads : %d\n",(int)cnt) ;
   /////////////////////////////////////////////////////////////////////
   if ( cnt <= 0 ) return                                              ;
   /////////////////////////////////////////////////////////////////////
   std::list<ThreadData *>::iterator it                                ;
   for ( it = threads . begin ( ) ; it != threads . end ( ) ; ++it )   {
+        printf("Join thread : %d\n",(int)(*it)->Id) ;
     (*it) -> Join ( )                                                 ;
-    LockThread   ( )                                                  ;
+       printf("Remove thread : %d\n",(int)(*it)->Id) ;
     ph -> handler -> remove ( (*it) )                                 ;
-    UnlockThread ( )                                                  ;
+    delete (*it)                                                      ;
   }                                                                   ;
   /////////////////////////////////////////////////////////////////////
 }

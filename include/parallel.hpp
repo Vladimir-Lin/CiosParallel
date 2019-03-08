@@ -378,6 +378,7 @@ class LIBPARALLEL_EXPORT ThreadData : public Destroyer
     explicit       ThreadData  (void) ;
     virtual       ~ThreadData  (void) ;
 
+    virtual bool   Interrupt   (void) ;
     virtual bool   Recycling   (void) ;
     virtual bool   Destructor  (void) ;
 
@@ -431,6 +432,7 @@ class LIBPARALLEL_EXPORT Thread : public Destroyer
     explicit              Thread       (void) ;
     virtual              ~Thread       (void) ;
 
+    virtual bool          Interrupt    (void) ;
     virtual bool          Recycling    (void) ;
     virtual bool          Destructor   (void) ;
 
