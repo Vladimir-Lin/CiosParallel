@@ -265,6 +265,7 @@ class PrivateCpuUsage
     short         m_nCpuUsage        ;
     ULONGLONG     m_dwLastRun        ;
     volatile LONG m_lRunCount        ;
+    DWORD         ErrorCode          ;
 
     explicit        PrivateCpuUsage  (void) ;
     virtual        ~PrivateCpuUsage  (void) ;
@@ -282,7 +283,6 @@ class PrivateCpuUsage
 
     ULONGLONG       SubtractTimes    (const FILETIME & ftA, const FILETIME & ftB);
     bool            EnoughTimePassed (void);
-    inline bool     IsFirstRun       (void) const { return (m_dwLastRun == 0); }
 
   protected:
 

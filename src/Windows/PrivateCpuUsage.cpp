@@ -303,11 +303,12 @@ static char     CpuType [ 13 ] = { 0,0,0,0,0,0,0,0,0,0,0,0,0 }               ;
 PrivateCpuUsage:: PrivateCpuUsage(void)
 {
   m_nCpuUsage = -1                                      ;
-  m_dwLastRun = 0                                       ;
-  m_lRunCount = 0                                       ;
+  m_dwLastRun =  0                                      ;
+  m_lRunCount =  0                                      ;
   ///////////////////////////////////////////////////////
   ZeroMemory ( &m_ftPrevSysKernel  , sizeof(FILETIME) ) ;
   ZeroMemory ( &m_ftPrevSysUser    , sizeof(FILETIME) ) ;
+  ZeroMemory ( &m_ftPrevSysIdle    , sizeof(FILETIME) ) ;
   ZeroMemory ( &m_ftPrevProcKernel , sizeof(FILETIME) ) ;
   ZeroMemory ( &m_ftPrevProcUser   , sizeof(FILETIME) ) ;
   ///////////////////////////////////////////////////////
@@ -466,7 +467,7 @@ bool PrivateCpuUsage::EnoughTimePassed(void)
 {
   const int minElapsedMS = 250;
   ULONGLONG dwCurrentTickCount = ::GetTickCount64();
-  return (dwCurrentTickCount - m_dwLastRun) > minElapsedMS;
+  return ( dwCurrentTickCount - m_dwLastRun ) > minElapsedMS ;
 }
 
 CPU::PowerState PrivateCpuUsage::Power(int & seconds,int & percent)
@@ -513,72 +514,81 @@ CPU::PowerState PrivateCpuUsage::Power(int & seconds,int & percent)
 
 short PrivateCpuUsage::GetUsage(bool cpu)
 {
-  short nCpuCopy = m_nCpuUsage ;
-
-  if (::InterlockedIncrement(&m_lRunCount) == 1) {
-
-    if (!EnoughTimePassed()) {
-      ::InterlockedDecrement(&m_lRunCount);
-      return nCpuCopy;
-    }
-
-    FILETIME ftSysIdle, ftSysKernel, ftSysUser;
-    FILETIME ftProcCreation, ftProcExit, ftProcKernel, ftProcUser;
-
-    bool notget = true ;
-    bool getcpu = true ;
-    bool getpro = true ;
-
-    if (cpu) {
-      getcpu = GetSystemTimes(&ftSysIdle,&ftSysKernel,&ftSysUser);
-      getpro = true;
-    } else {
-      getcpu = GetSystemTimes(&ftSysIdle,&ftSysKernel,&ftSysUser);
-      getpro = GetProcessTimes(GetCurrentProcess(),&ftProcCreation,&ftProcExit,&ftProcKernel,&ftProcUser);
-    };
-
-    notget = (!getcpu) || (!getpro);
-
-    if (notget) {
-      ::InterlockedDecrement(&m_lRunCount);
-      return nCpuCopy;
-    }
-
-    if (!IsFirstRun()) {
-      if (cpu) {
-        ULONGLONG ftSysKernelDiff  = SubtractTimes(ftSysKernel , m_ftPrevSysKernel);
-        ULONGLONG ftSysUserDiff    = SubtractTimes(ftSysUser   , m_ftPrevSysUser  );
-        ULONGLONG ftSysIdleDiff    = SubtractTimes(ftSysIdle   , m_ftPrevSysIdle  );
-        ULONGLONG nTotalSys        = ftSysKernelDiff + ftSysUserDiff;
-        ULONGLONG nTotalProc       = nTotalSys - ftSysIdleDiff;
-        if (nTotalSys > 0) {
-          m_nCpuUsage = (short)((10000.0 * nTotalProc) / nTotalSys);
-        }
-      } else {
-        ULONGLONG ftSysKernelDiff  = SubtractTimes(ftSysKernel  , m_ftPrevSysKernel );
-        ULONGLONG ftSysUserDiff    = SubtractTimes(ftSysUser    , m_ftPrevSysUser   );
-        ULONGLONG ftProcKernelDiff = SubtractTimes(ftProcKernel , m_ftPrevProcKernel);
-        ULONGLONG ftProcUserDiff   = SubtractTimes(ftProcUser   , m_ftPrevProcUser  );
-        ULONGLONG nTotalSys        = ftSysKernelDiff  + ftSysUserDiff;
-        ULONGLONG nTotalProc       = ftProcKernelDiff + ftProcUserDiff;
-        if (nTotalSys > 0) {
-          m_nCpuUsage = (short)((10000.0 * nTotalProc) / nTotalSys);
-        }
-      }
-    }
-
-    m_ftPrevSysKernel  = ftSysKernel;
-    m_ftPrevSysUser    = ftSysUser;
-    m_ftPrevSysIdle    = ftSysIdle;
-    m_ftPrevProcKernel = ftProcKernel;
-    m_ftPrevProcUser   = ftProcUser;
-    m_dwLastRun        = GetTickCount64();
-
-    nCpuCopy = m_nCpuUsage;
-  }
-
-  ::InterlockedDecrement(&m_lRunCount);
-  return nCpuCopy ;
+  short nCpuCopy = m_nCpuUsage                                               ;
+  ////////////////////////////////////////////////////////////////////////////
+  if ( 1 == ::InterlockedIncrement ( &m_lRunCount ) )                        {
+    //////////////////////////////////////////////////////////////////////////
+    if ( ! EnoughTimePassed ( ) )                                            {
+      ::InterlockedDecrement ( &m_lRunCount )                                ;
+      return nCpuCopy                                                        ;
+    }                                                                        ;
+    //////////////////////////////////////////////////////////////////////////
+    FILETIME ftSysIdle                                                       ;
+    FILETIME ftSysKernel                                                     ;
+    FILETIME ftSysUser                                                       ;
+    FILETIME ftProcCreation                                                  ;
+    FILETIME ftProcExit                                                      ;
+    FILETIME ftProcKernel                                                    ;
+    FILETIME ftProcUser                                                      ;
+    //////////////////////////////////////////////////////////////////////////
+    bool     notget = true                                                   ;
+    bool     getcpu = true                                                   ;
+    bool     getpro = true                                                   ;
+    //////////////////////////////////////////////////////////////////////////
+    if ( cpu )                                                               {
+      getcpu = ::GetSystemTimes  ( &ftSysIdle , &ftSysKernel , &ftSysUser  ) ;
+      getpro = true                                                          ;
+    } else                                                                   {
+      getcpu = ::GetSystemTimes  ( &ftSysIdle , &ftSysKernel , &ftSysUser  ) ;
+      getpro = ::GetProcessTimes ( ::GetCurrentProcess ( )                   ,
+                                   &ftProcCreation                           ,
+                                   &ftProcExit                               ,
+                                   &ftProcKernel                             ,
+                                   &ftProcUser                             ) ;
+    }                                                                        ;
+    //////////////////////////////////////////////////////////////////////////
+    notget = ( ! getcpu ) || ( ! getpro )                                    ;
+    if ( notget )                                                            {
+      ::InterlockedDecrement ( &m_lRunCount )                                ;
+      return nCpuCopy                                                        ;
+    }                                                                        ;
+    //////////////////////////////////////////////////////////////////////////
+    if ( 0 != m_dwLastRun )                                                  {
+      if ( cpu )                                                             {
+        ULONGLONG ftSysKernelDiff  = SubtractTimes ( ftSysKernel , m_ftPrevSysKernel ) ;
+        ULONGLONG ftSysUserDiff    = SubtractTimes ( ftSysUser   , m_ftPrevSysUser   ) ;
+        ULONGLONG ftSysIdleDiff    = SubtractTimes ( ftSysIdle   , m_ftPrevSysIdle   ) ;
+        ULONGLONG nTotalSys        = ftSysKernelDiff  + ftSysUserDiff         ;
+        ULONGLONG nTotalProc       = nTotalSys        - ftSysIdleDiff         ;
+        if ( nTotalSys > 0 )                                                 {
+          m_nCpuUsage = (short) ( ( 10000.0 * nTotalProc ) / nTotalSys )     ;
+        }                                                                    ;
+      } else                                                                 {
+        ULONGLONG ftSysKernelDiff  = SubtractTimes ( ftSysKernel  , m_ftPrevSysKernel  ) ;
+        ULONGLONG ftSysUserDiff    = SubtractTimes ( ftSysUser    , m_ftPrevSysUser    ) ;
+        ULONGLONG ftProcKernelDiff = SubtractTimes ( ftProcKernel , m_ftPrevProcKernel ) ;
+        ULONGLONG ftProcUserDiff   = SubtractTimes ( ftProcUser   , m_ftPrevProcUser   ) ;
+        ULONGLONG nTotalSys        = ftSysKernelDiff  + ftSysUserDiff        ;
+        ULONGLONG nTotalProc       = ftProcKernelDiff + ftProcUserDiff       ;
+        if ( nTotalSys > 0 )                                                 {
+          m_nCpuUsage = (short) ( ( 10000.0 * nTotalProc ) / nTotalSys )     ;
+        }                                                                    ;
+      }                                                                      ;
+    }                                                                        ;
+    //////////////////////////////////////////////////////////////////////////
+    m_ftPrevSysKernel  = ftSysKernel                                         ;
+    m_ftPrevSysUser    = ftSysUser                                           ;
+    m_ftPrevSysIdle    = ftSysIdle                                           ;
+    m_ftPrevProcKernel = ftProcKernel                                        ;
+    m_ftPrevProcUser   = ftProcUser                                          ;
+    m_dwLastRun        = ::GetTickCount64 ( )                                ;
+    //////////////////////////////////////////////////////////////////////////
+    nCpuCopy = m_nCpuUsage                                                   ;
+    //////////////////////////////////////////////////////////////////////////
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  ::InterlockedDecrement ( &m_lRunCount )                                    ;
+  return nCpuCopy                                                            ;
 }
 
 #pragma pack(push,1)
@@ -625,17 +635,23 @@ bool PrivateCpuUsage::Tell(ProcessDetails * process)
     process -> page    = pmc . PrivateUsage                                  ;
   } else return false                                                        ;
   ////////////////////////////////////////////////////////////////////////////
+  // Get Windows Memory Status
+  ////////////////////////////////////////////////////////////////////////////
   MEMORYSTATUSEX MSS                                                         ;
   ::memset ( &MSS , 0 , sizeof(MEMORYSTATUSEX) )                             ;
   MSS . dwLength = sizeof(MEMORYSTATUSEX)                                    ;
   R = ::GlobalMemoryStatusEx ( &MSS )                                        ;
-  if ( R != 0 )                                                              {
-    process -> load             = (int32_t) MSS . dwMemoryLoad               ;
-    process -> total            = (int64_t) MSS . ullTotalPhys               ;
-    process -> available        = (int64_t) MSS . ullAvailPhys               ;
-    process -> virtualTotal     = (int64_t) MSS . ullTotalVirtual            ;
-    process -> virtualAvailable = (int64_t) MSS . ullAvailVirtual            ;
-  } else return false                                                        ;
+  ////////////////////////////////////////////////////////////////////////////
+  if ( 0 == R )                                                              {
+    ErrorCode = ::GetLastError ( )                                           ;
+    return false                                                             ;
+  }                                                                          ;
+  ////////////////////////////////////////////////////////////////////////////
+  process -> load             = (int32_t) MSS . dwMemoryLoad                 ;
+  process -> total            = (int64_t) MSS . ullTotalPhys                 ;
+  process -> available        = (int64_t) MSS . ullAvailPhys                 ;
+  process -> virtualTotal     = (int64_t) MSS . ullTotalVirtual              ;
+  process -> virtualAvailable = (int64_t) MSS . ullAvailVirtual              ;
   ////////////////////////////////////////////////////////////////////////////
   return true                                                                ;
 }

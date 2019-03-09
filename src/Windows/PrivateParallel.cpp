@@ -48,14 +48,14 @@ int32_t ThreadHandler::LastestId(void)
 
 ThreadData * ThreadHandler::at(int index)
 {
-  if ( index <  0              ) return & ( this -> Data ) ;
-  if ( index >= All . size ( ) ) return nullptr            ;
-  std::list<ThreadData *>::iterator it                     ;
-  it = All . begin ( )                                     ;
-  if ( index == 0 ) return (*it)                           ;
-  it = std::next ( All . begin ( ) , index - 1 )           ;
-  if ( it == All . end ( ) ) return nullptr                ;
-  return (*it)                                             ;
+  if ( index <  0                    ) return & ( this -> Data ) ;
+  if ( index >= (int) All . size ( ) ) return nullptr            ;
+  std::list<ThreadData *>::iterator it                           ;
+  it = All . begin ( )                                           ;
+  if ( index == 0 ) return (*it)                                 ;
+  it = std::next ( All . begin ( ) , index - 1 )                 ;
+  if ( it == All . end ( ) ) return nullptr                      ;
+  return (*it)                                                   ;
 }
 
 ThreadData * ThreadHandler::current(void)
