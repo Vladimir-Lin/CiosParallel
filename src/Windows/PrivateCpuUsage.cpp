@@ -455,12 +455,13 @@ int64_t PrivateCpuUsage::Memory(void)
 
 ULONGLONG PrivateCpuUsage::SubtractTimes(const FILETIME & ftA,const FILETIME & ftB)
 {
-  LARGE_INTEGER a,b               ;
-  a.LowPart  = ftA.dwLowDateTime  ;
-  a.HighPart = ftA.dwHighDateTime ;
-  b.LowPart  = ftB.dwLowDateTime  ;
-  b.HighPart = ftB.dwHighDateTime ;
-  return a.QuadPart - b.QuadPart  ;
+  LARGE_INTEGER a                     ;
+  LARGE_INTEGER b                     ;
+  a . LowPart  = ftA . dwLowDateTime  ;
+  a . HighPart = ftA . dwHighDateTime ;
+  b . LowPart  = ftB . dwLowDateTime  ;
+  b . HighPart = ftB . dwHighDateTime ;
+  return a . QuadPart - b . QuadPart  ;
 }
 
 bool PrivateCpuUsage::EnoughTimePassed(void)
@@ -558,8 +559,8 @@ short PrivateCpuUsage::GetUsage(bool cpu)
         ULONGLONG ftSysKernelDiff  = SubtractTimes ( ftSysKernel , m_ftPrevSysKernel ) ;
         ULONGLONG ftSysUserDiff    = SubtractTimes ( ftSysUser   , m_ftPrevSysUser   ) ;
         ULONGLONG ftSysIdleDiff    = SubtractTimes ( ftSysIdle   , m_ftPrevSysIdle   ) ;
-        ULONGLONG nTotalSys        = ftSysKernelDiff  + ftSysUserDiff         ;
-        ULONGLONG nTotalProc       = nTotalSys        - ftSysIdleDiff         ;
+        ULONGLONG nTotalSys        = ftSysKernelDiff  + ftSysUserDiff        ;
+        ULONGLONG nTotalProc       = nTotalSys        - ftSysIdleDiff        ;
         if ( nTotalSys > 0 )                                                 {
           m_nCpuUsage = (short) ( ( 10000.0 * nTotalProc ) / nTotalSys )     ;
         }                                                                    ;
